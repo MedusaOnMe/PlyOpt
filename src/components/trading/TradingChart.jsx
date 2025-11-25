@@ -21,7 +21,6 @@ export function TradingChart() {
     get24hChange,
   } = useMarket()
 
-  const [chartType, setChartType] = useState('area') // 'area' or 'candle'
 
   // Initialize chart - depends on selectedMarket because the container isn't rendered without it
   useEffect(() => {
@@ -207,30 +206,6 @@ export function TradingChart() {
                 {formatChange(change24h)}
               </span>
             </div>
-          </div>
-
-          {/* Chart type toggle */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setChartType('area')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                chartType === 'area'
-                  ? 'bg-accent-blue/20 text-accent-blue'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Area
-            </button>
-            <button
-              onClick={() => setChartType('candle')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                chartType === 'candle'
-                  ? 'bg-accent-blue/20 text-accent-blue'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Candles
-            </button>
           </div>
         </div>
 
