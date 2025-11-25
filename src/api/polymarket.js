@@ -1,8 +1,8 @@
 // Polymarket API endpoints
-// Use proxy in dev, direct URLs in production
+// Use Vite proxy in dev, Vercel serverless proxy in production
 const isDev = import.meta.env.DEV
-const GAMMA_API = isDev ? '/gamma-api' : 'https://gamma-api.polymarket.com'
-const CLOB_API = isDev ? '/clob-api' : 'https://clob.polymarket.com'
+const GAMMA_API = isDev ? '/gamma-api' : '/api/gamma'
+const CLOB_API = isDev ? '/clob-api' : '/api/clob'
 
 // Fetch markets from Gamma API
 export async function fetchMarkets(options = {}) {
