@@ -31,7 +31,7 @@ function TradingPage() {
             {/* Left Column: Chart + Stats + Positions */}
             <div className="flex-1 flex flex-col gap-2 lg:gap-3 min-w-0">
               {/* Chart - Main focus */}
-              <div className="h-[450px] lg:h-[520px]">
+              <div className="h-[500px] lg:h-[580px]">
                 <TradingChart />
               </div>
 

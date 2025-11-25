@@ -18,7 +18,7 @@ export function Tabs({ tabs, defaultTab, onChange }) {
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`px-4 py-2.5 text-[10px] uppercase tracking-wider font-medium transition-colors relative ${
+            className={`px-4 py-2.5 text-xs uppercase tracking-wider font-medium transition-colors relative ${
               activeTab === tab.id
                 ? 'text-term-green'
                 : 'text-term-text-dim hover:text-term-text'
@@ -28,7 +28,7 @@ export function Tabs({ tabs, defaultTab, onChange }) {
               {tab.icon}
               {tab.label}
               {tab.count !== undefined && (
-                <span className={`px-1.5 py-0.5 text-[10px] ${
+                <span className={`px-1.5 py-0.5 text-xs ${
                   activeTab === tab.id ? 'bg-term-green/20 text-term-green' : 'bg-term-gray text-term-text-dim'
                 }`}>
                   {tab.count}
@@ -36,7 +36,7 @@ export function Tabs({ tabs, defaultTab, onChange }) {
               )}
             </span>
             {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-term-green" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-term-green" />
             )}
           </button>
         ))}

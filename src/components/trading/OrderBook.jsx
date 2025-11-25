@@ -38,17 +38,17 @@ export function OrderBook() {
       {/* Header */}
       <div className="px-3 py-2 border-b border-term-border">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-term-text-dim uppercase tracking-wider">ORDER_BOOK</span>
+          <span className="text-xs text-term-text-dim uppercase tracking-wider">ORDER_BOOK</span>
           <div className="flex items-center gap-1.5">
             <div className="status-online" />
-            <span className="text-[10px] text-term-text-dim">LIVE</span>
+            <span className="text-xs text-term-text-dim">LIVE</span>
           </div>
         </div>
       </div>
 
       {/* Column headers */}
       <div className="px-3 py-1.5 border-b border-term-border">
-        <div className="flex justify-between text-[10px] text-term-text-dim uppercase">
+        <div className="flex justify-between text-xs text-term-text-dim uppercase">
           <span>PRICE</span>
           <span>SIZE</span>
           <span>TOTAL</span>
@@ -77,10 +77,10 @@ export function OrderBook() {
           {/* Spread / Current price */}
           <div className="px-3 py-2 bg-term-black border-y border-term-border">
             <div className="flex items-center justify-between">
-              <span className="text-base font-bold text-term-green term-glow">
+              <span className="text-lg font-bold text-term-green term-glow">
                 {formatCents(currentPrice)}
               </span>
-              <span className="text-[10px] text-term-text-dim">
+              <span className="text-xs text-term-text-dim">
                 SPR: {formatCents(spread)}
               </span>
             </div>
@@ -103,7 +103,7 @@ export function OrderBook() {
 
       {/* Footer stats */}
       <div className="px-3 py-2 border-t border-term-border">
-        <div className="grid grid-cols-2 gap-2 text-[10px]">
+        <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
             <span className="text-term-text-dim">BID VOL</span>
             <p className="text-term-green">
@@ -135,7 +135,7 @@ function OrderRow({ price, size, maxSize, side }) {
       />
 
       {/* Content */}
-      <div className="relative flex justify-between text-[10px]">
+      <div className="relative flex justify-between text-xs">
         <span className={side === 'bid' ? 'text-term-green' : 'text-term-red'}>
           {formatCents(price)}
         </span>

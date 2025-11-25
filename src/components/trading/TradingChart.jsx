@@ -173,14 +173,14 @@ export function TradingChart() {
       <div className="px-3 py-2 border-b border-term-border">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-term-text-dim uppercase tracking-wider mb-1 truncate">
+            <p className="text-sm text-term-text-dim uppercase tracking-wider mb-1 truncate">
               {selectedMarket.question}
             </p>
             <div className="flex items-baseline gap-3">
-              <span className={`text-2xl font-bold ${isPositive ? 'text-term-green term-glow' : 'text-term-red term-glow-red'}`}>
+              <span className={`text-3xl font-bold ${isPositive ? 'text-term-green term-glow' : 'text-term-red term-glow-red'}`}>
                 {formatCents(currentPrice)}
               </span>
-              <span className={`text-xs ${isPositive ? 'text-term-green' : 'text-term-red'}`}>
+              <span className={`text-base ${isPositive ? 'text-term-green' : 'text-term-red'}`}>
                 {formatChange(change24h)}
               </span>
             </div>
@@ -193,7 +193,7 @@ export function TradingChart() {
             <button
               key={tf.label}
               onClick={() => setSelectedTimeframe(tf.interval)}
-              className={`px-2 py-1 text-[10px] transition-colors ${
+              className={`px-2.5 py-1.5 text-xs transition-colors ${
                 selectedTimeframe === tf.interval
                   ? 'text-term-green bg-term-green/10'
                   : 'text-term-text-dim hover:text-term-green'
@@ -216,7 +216,7 @@ export function TradingChart() {
       </div>
 
       {/* Bottom stats */}
-      <div className="px-3 py-2 border-t border-term-border flex items-center justify-between text-[10px]">
+      <div className="px-3 py-2 border-t border-term-border flex items-center justify-between text-xs">
         <div className="flex items-center gap-4 text-term-text-dim">
           <span>
             H: <span className="text-term-green">

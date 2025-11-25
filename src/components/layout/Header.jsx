@@ -98,15 +98,15 @@ export function Header() {
                 <BarChart3 className="w-4 h-4 text-term-green" />
                 {selectedMarket ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-term-text max-w-[200px] truncate">
+                    <span className="text-sm text-term-text max-w-[200px] truncate">
                       {selectedMarket.question}
                     </span>
-                    <span className="text-xs text-term-green font-bold term-glow">
+                    <span className="text-sm text-term-green font-bold term-glow">
                       {formatCents(selectedMarket.yesPrice || 0.5)}
                     </span>
                   </div>
                 ) : (
-                  <span className="text-xs text-term-green font-medium">SELECT MARKET</span>
+                  <span className="text-sm text-term-green font-medium">SELECT MARKET</span>
                 )}
                 <ChevronDown className="w-3 h-3 text-term-green" />
               </button>
@@ -118,7 +118,7 @@ export function Header() {
                 style={{ boxShadow: '0 0 15px #00ff41, 0 0 30px rgba(0,255,65,0.4)' }}
               >
                 <BarChart3 className="w-4 h-4 text-term-green" />
-                <span className="text-xs text-term-green font-medium">MARKETS</span>
+                <span className="text-sm text-term-green font-medium">MARKETS</span>
               </button>
             </div>
 
@@ -157,8 +157,8 @@ export function Header() {
 
                   {/* Dropdown menu */}
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-1 w-56 bg-term-dark border border-term-border shadow-xl z-50">
-                      <div className="px-3 py-2 border-b border-term-border">
+                    <div className="absolute right-0 mt-1 w-56 bg-black border border-term-border shadow-xl z-50">
+                      <div className="px-3 py-2 border-b border-term-border bg-black">
                         <p className="text-[10px] text-term-text-dim uppercase">Session</p>
                         <p className="text-xs text-term-text truncate mt-1">
                           {user.email || user.walletAddress?.slice(0, 20)}

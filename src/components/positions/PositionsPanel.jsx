@@ -16,21 +16,21 @@ export function PositionsPanel() {
     {
       id: 'positions',
       label: 'Positions',
-      icon: <TrendingUp className="w-3 h-3" />,
+      icon: <TrendingUp className="w-4 h-4" />,
       count: positions.length,
       content: <PositionsList />,
     },
     {
       id: 'orders',
       label: 'Open Orders',
-      icon: <Clock className="w-3 h-3" />,
+      icon: <Clock className="w-4 h-4" />,
       count: orders.length,
       content: <OrdersList />,
     },
     {
       id: 'history',
       label: 'Trade History',
-      icon: <History className="w-3 h-3" />,
+      icon: <History className="w-4 h-4" />,
       content: <TradeHistoryList />,
     },
   ]
@@ -38,7 +38,7 @@ export function PositionsPanel() {
   if (!isAuthenticated) {
     return (
       <div className="bg-term-dark border border-term-border p-8">
-        <div className="text-center text-xs text-term-text-dim">
+        <div className="text-center text-sm text-term-text-dim">
           &gt; CONNECT_WALLET_TO_VIEW_POSITIONS_
         </div>
       </div>
@@ -108,8 +108,8 @@ function PositionsList() {
     return (
       <div className="p-8 text-center text-term-text-dim">
         <TrendingUp className="w-6 h-6 mx-auto mb-2 opacity-50" />
-        <p className="text-xs">&gt; NO_OPEN_POSITIONS_</p>
-        <p className="text-[10px] mt-1">Open a trade to see it here</p>
+        <p className="text-sm">&gt; NO_OPEN_POSITIONS_</p>
+        <p className="text-xs mt-1">Open a trade to see it here</p>
       </div>
     )
   }
@@ -133,7 +133,7 @@ function PositionsList() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`px-1.5 py-0.5 text-[10px] font-medium ${
+                  <span className={`px-1.5 py-0.5 text-xs font-medium ${
                     position.side === 'YES'
                       ? 'bg-term-green/20 text-term-green'
                       : 'bg-term-red/20 text-term-red'
@@ -141,28 +141,28 @@ function PositionsList() {
                     {position.side} {position.leverage}x
                   </span>
                   {isNearLiquidation && (
-                    <span className="flex items-center gap-1 text-[10px] text-term-amber">
+                    <span className="flex items-center gap-1 text-xs text-term-amber">
                       <AlertTriangle className="w-3 h-3" />
                       LIQ_RISK
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-term-text truncate">
+                <p className="text-sm text-term-text truncate">
                   {position.marketQuestion}
                 </p>
               </div>
 
               <div className="text-right">
-                <p className={`text-sm font-bold ${pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
+                <p className={`text-base font-bold ${pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
                   {pnlFormatted.text}
                 </p>
-                <p className={`text-[10px] ${pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
+                <p className={`text-xs ${pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
                   {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mt-2 text-[10px]">
+            <div className="grid grid-cols-4 gap-4 mt-2 text-xs">
               <div>
                 <span className="text-term-text-dim">SIZE</span>
                 <p className="text-term-text">{formatPrice(position.size)}</p>
@@ -184,7 +184,7 @@ function PositionsList() {
             </div>
 
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-term-border">
-              <span className="text-[10px] text-term-text-dim">
+              <span className="text-xs text-term-text-dim">
                 {formatTimeAgo(position.openedAt)}
               </span>
               <Button
@@ -226,8 +226,8 @@ function OrdersList() {
     return (
       <div className="p-8 text-center text-term-text-dim">
         <Clock className="w-6 h-6 mx-auto mb-2 opacity-50" />
-        <p className="text-xs">&gt; NO_OPEN_ORDERS_</p>
-        <p className="text-[10px] mt-1">Place a limit order to see it here</p>
+        <p className="text-sm">&gt; NO_OPEN_ORDERS_</p>
+        <p className="text-xs mt-1">Place a limit order to see it here</p>
       </div>
     )
   }
@@ -239,7 +239,7 @@ function OrdersList() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={`px-1.5 py-0.5 text-[10px] font-medium ${
+                <span className={`px-1.5 py-0.5 text-xs font-medium ${
                   order.side === 'YES'
                     ? 'bg-term-green/20 text-term-green'
                     : 'bg-term-red/20 text-term-red'
@@ -247,7 +247,7 @@ function OrdersList() {
                   {order.side} {order.leverage}x LIMIT
                 </span>
               </div>
-              <p className="text-xs text-term-text truncate">
+              <p className="text-sm text-term-text truncate">
                 {order.marketQuestion}
               </p>
             </div>
@@ -261,7 +261,7 @@ function OrdersList() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-2 text-[10px]">
+          <div className="grid grid-cols-3 gap-4 mt-2 text-xs">
             <div>
               <span className="text-term-text-dim">SIZE</span>
               <p className="text-term-text">{formatPrice(order.size)}</p>
@@ -288,8 +288,8 @@ function TradeHistoryList() {
     return (
       <div className="p-8 text-center text-term-text-dim">
         <History className="w-6 h-6 mx-auto mb-2 opacity-50" />
-        <p className="text-xs">&gt; NO_TRADE_HISTORY_</p>
-        <p className="text-[10px] mt-1">Your closed trades will appear here</p>
+        <p className="text-sm">&gt; NO_TRADE_HISTORY_</p>
+        <p className="text-xs mt-1">Your closed trades will appear here</p>
       </div>
     )
   }
@@ -304,12 +304,12 @@ function TradeHistoryList() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`px-1.5 py-0.5 text-[10px] font-medium ${
+                  <span className={`px-1.5 py-0.5 text-xs font-medium ${
                     trade.type === 'OPEN' ? 'bg-term-cyan/20 text-term-cyan' : 'bg-term-gray text-term-text-dim'
                   }`}>
                     {trade.type}
                   </span>
-                  <span className={`px-1.5 py-0.5 text-[10px] font-medium ${
+                  <span className={`px-1.5 py-0.5 text-xs font-medium ${
                     trade.side === 'YES'
                       ? 'bg-term-green/20 text-term-green'
                       : 'bg-term-red/20 text-term-red'
@@ -317,24 +317,24 @@ function TradeHistoryList() {
                     {trade.side} {trade.leverage}x
                   </span>
                 </div>
-                <p className="text-xs text-term-text truncate">
+                <p className="text-sm text-term-text truncate">
                   {trade.marketQuestion}
                 </p>
               </div>
 
               {pnlFormatted && (
                 <div className="text-right">
-                  <p className={`text-sm font-bold ${trade.pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
+                  <p className={`text-base font-bold ${trade.pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
                     {pnlFormatted.text}
                   </p>
-                  <p className={`text-[10px] ${trade.pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
+                  <p className={`text-xs ${trade.pnl >= 0 ? 'text-term-green' : 'text-term-red'}`}>
                     {trade.roi >= 0 ? '+' : ''}{trade.roi?.toFixed(2)}%
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between mt-2 text-[10px] text-term-text-dim">
+            <div className="flex items-center justify-between mt-2 text-xs text-term-text-dim">
               <div className="flex items-center gap-4">
                 <span>SIZE: {formatPrice(trade.size)}</span>
                 {trade.entryPrice && <span>ENTRY: {formatCents(trade.entryPrice)}</span>}

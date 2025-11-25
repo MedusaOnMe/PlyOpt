@@ -96,24 +96,24 @@ export function OrderEntry() {
       <div className="grid grid-cols-2">
         <button
           onClick={() => setSide('YES')}
-          className={`py-2.5 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 border-b ${
+          className={`py-3 text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
             side === 'YES'
-              ? 'bg-term-green/10 text-term-green border-term-green'
-              : 'bg-term-gray text-term-text-dim hover:text-term-text border-term-border'
+              ? 'bg-white text-black'
+              : 'bg-term-dark text-term-text-dim hover:text-term-text border-b border-term-border'
           }`}
         >
-          <ArrowUp className="w-3 h-3" />
+          <ArrowUp className="w-4 h-4" />
           LONG
         </button>
         <button
           onClick={() => setSide('NO')}
-          className={`py-2.5 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 border-b ${
+          className={`py-3 text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
             side === 'NO'
-              ? 'bg-term-red/10 text-term-red border-term-red'
-              : 'bg-term-gray text-term-text-dim hover:text-term-text border-term-border'
+              ? 'bg-white text-black'
+              : 'bg-term-dark text-term-text-dim hover:text-term-text border-b border-term-border'
           }`}
         >
-          <ArrowDown className="w-3 h-3" />
+          <ArrowDown className="w-4 h-4" />
           SHORT
         </button>
       </div>
@@ -123,20 +123,20 @@ export function OrderEntry() {
         <div className="flex gap-1">
           <button
             onClick={() => setOrderType('market')}
-            className={`flex-1 py-1.5 text-[10px] font-medium transition-colors ${
+            className={`flex-1 py-2 text-xs font-medium transition-all border ${
               orderType === 'market'
-                ? 'text-term-green bg-term-green/10'
-                : 'text-term-text-dim hover:text-term-text'
+                ? 'bg-white text-black border-white'
+                : 'text-term-text-dim bg-term-dark hover:text-term-text border-term-border'
             }`}
           >
             MARKET
           </button>
           <button
             onClick={() => setOrderType('limit')}
-            className={`flex-1 py-1.5 text-[10px] font-medium transition-colors ${
+            className={`flex-1 py-2 text-xs font-medium transition-all border ${
               orderType === 'limit'
-                ? 'text-term-green bg-term-green/10'
-                : 'text-term-text-dim hover:text-term-text'
+                ? 'bg-white text-black border-white'
+                : 'text-term-text-dim bg-term-dark hover:text-term-text border-term-border'
             }`}
           >
             LIMIT
@@ -146,7 +146,7 @@ export function OrderEntry() {
         {/* Limit price input */}
         {orderType === 'limit' && (
           <div>
-            <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+            <label className="block text-xs text-term-text-dim uppercase mb-1">
               Limit Price
             </label>
             <input
@@ -157,7 +157,7 @@ export function OrderEntry() {
               step="0.01"
               min="0.01"
               max="0.99"
-              className="w-full bg-term-black border border-term-border px-3 py-2 text-xs text-term-text placeholder:text-term-text-dim"
+              className="w-full bg-term-black border border-term-border px-3 py-2 text-sm text-term-text placeholder:text-term-text-dim"
             />
           </div>
         )}
@@ -165,21 +165,21 @@ export function OrderEntry() {
         {/* Size input */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-term-text-dim uppercase">Size (USD)</label>
+            <label className="text-xs text-term-text-dim uppercase">Size (USD)</label>
             {isAuthenticated && (
-              <span className="text-[10px] text-term-text-dim">
+              <span className="text-xs text-term-text-dim">
                 BAL: <span className="text-term-text">{formatPrice(user?.balance)}</span>
               </span>
             )}
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-term-text-dim text-xs">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-term-text-dim text-sm">$</span>
             <input
               type="number"
               value={size}
               onChange={(e) => setSize(e.target.value)}
               placeholder="0.00"
-              className="w-full bg-term-black border border-term-border pl-6 pr-3 py-2 text-xs text-term-text placeholder:text-term-text-dim"
+              className="w-full bg-term-black border border-term-border pl-6 pr-3 py-2 text-sm text-term-text placeholder:text-term-text-dim"
             />
           </div>
           {/* Quick amount buttons */}
@@ -193,7 +193,7 @@ export function OrderEntry() {
                   }
                 }}
                 disabled={!isAuthenticated}
-                className="flex-1 py-1 text-[10px] text-term-text-dim hover:text-term-green hover:bg-term-green/10 transition-colors disabled:opacity-30"
+                className="flex-1 py-1 text-xs text-term-text-dim hover:text-term-green hover:bg-term-green/10 transition-colors disabled:opacity-30"
               >
                 {pct}%
               </button>
@@ -206,31 +206,31 @@ export function OrderEntry() {
 
         {/* Calculations */}
         <div className="space-y-1.5 pt-2 border-t border-term-border">
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-text-dim">ENTRY</span>
             <span className="text-term-text">
               {formatCents(orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : currentPrice)}
             </span>
           </div>
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-text-dim">MARGIN</span>
             <span className="text-term-text">{formatPrice(calculations.margin)}</span>
           </div>
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-text-dim">SHARES</span>
             <span className="text-term-text">{calculations.shares.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-text-dim">PROFIT</span>
             <span className="text-term-green">
               +{formatPrice(calculations.potentialProfit)} ({calculations.roi.toFixed(1)}%)
             </span>
           </div>
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-text-dim">FEE</span>
             <span className="text-term-text">{formatPrice(calculations.fee)}</span>
           </div>
-          <div className="flex justify-between text-[10px]">
+          <div className="flex justify-between text-xs">
             <span className="text-term-amber flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
               LIQ_PRICE
@@ -243,7 +243,7 @@ export function OrderEntry() {
         {leverage >= 20 && (
           <div className="flex items-start gap-2 p-2 border border-term-amber/30 bg-term-amber/5">
             <AlertTriangle className="w-3 h-3 text-term-amber flex-shrink-0 mt-0.5" />
-            <p className="text-[10px] text-term-amber">
+            <p className="text-xs text-term-amber">
               HIGH LEVERAGE - LIQUIDATION RISK
             </p>
           </div>
@@ -253,7 +253,7 @@ export function OrderEntry() {
         <button
           onClick={handleSubmit}
           disabled={loading || !size || parseFloat(size) <= 0}
-          className={`w-full py-2.5 text-xs font-medium transition-colors disabled:opacity-30 ${
+          className={`w-full py-2.5 text-sm font-medium transition-colors disabled:opacity-30 ${
             side === 'YES'
               ? 'border border-term-green text-term-green hover:bg-term-green hover:text-term-black'
               : 'border border-term-red text-term-red hover:bg-term-red hover:text-term-black'
@@ -267,7 +267,7 @@ export function OrderEntry() {
         </button>
 
         {!isAuthenticated && (
-          <p className="text-[10px] text-term-text-dim text-center">
+          <p className="text-xs text-term-text-dim text-center">
             &gt; CONNECT_WALLET
           </p>
         )}

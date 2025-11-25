@@ -29,15 +29,15 @@ export function MarketStats() {
   return (
     <div className="bg-term-dark border border-term-border p-3">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] text-term-text-dim uppercase tracking-wider">MARKET_STATS</span>
+        <span className="text-xs text-term-text-dim uppercase tracking-wider">MARKET_STATS</span>
         <FundingCountdown />
       </div>
 
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {stats.map((stat, i) => (
           <div key={i}>
-            <span className="text-[10px] text-term-text-dim">{stat.label}</span>
-            <p className={`text-xs font-medium ${stat.color}`}>{stat.value}</p>
+            <span className="text-xs text-term-text-dim">{stat.label}</span>
+            <p className={`text-sm font-medium ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -54,8 +54,8 @@ function FundingCountdown() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-term-text-dim">NEXT_FUNDING:</span>
-      <span className="text-xs text-term-green">
+      <span className="text-xs text-term-text-dim">NEXT_FUNDING:</span>
+      <span className="text-sm text-term-green">
         {String(hoursLeft).padStart(2, '0')}:{String(minutesLeft).padStart(2, '0')}:00
       </span>
     </div>

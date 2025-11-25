@@ -15,8 +15,8 @@ export function LeverageSlider({ value, onChange }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-[10px] text-term-text-dim uppercase">Leverage</label>
-        <span className="text-xs font-bold text-term-green term-glow">{value}x</span>
+        <label className="text-xs text-term-text-dim uppercase">Leverage</label>
+        <span className="text-sm font-bold text-term-green term-glow">{value}x</span>
       </div>
 
       {/* Slider */}
@@ -39,7 +39,7 @@ export function LeverageSlider({ value, onChange }) {
             <button
               key={lev}
               onClick={() => onChange(lev)}
-              className={`text-[10px] transition-colors ${
+              className={`text-xs transition-colors ${
                 value === lev ? 'text-term-green font-medium' : 'text-term-text-dim hover:text-term-text'
               }`}
             >
@@ -55,7 +55,7 @@ export function LeverageSlider({ value, onChange }) {
           <button
             key={lev}
             onClick={() => onChange(lev)}
-            className={`flex-1 py-1 text-[10px] font-medium transition-colors ${
+            className={`flex-1 py-1 text-xs font-medium transition-colors ${
               value === lev
                 ? 'bg-term-green/20 text-term-green border border-term-green'
                 : 'bg-term-gray text-term-text-dim hover:text-term-text border border-term-border hover:border-term-green/50'
