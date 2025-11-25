@@ -28,9 +28,9 @@ export function Header() {
   const [revealedKey, setRevealedKey] = useState('')
   const [showKey, setShowKey] = useState(false)
 
-  const handleExportKey = () => {
+  const handleExportKey = async () => {
     try {
-      const privateKey = exportPrivateKey(exportPassword)
+      const privateKey = await exportPrivateKey(exportPassword)
       setRevealedKey(privateKey)
     } catch (err) {
       toast.error(err.message || 'Failed to export private key')

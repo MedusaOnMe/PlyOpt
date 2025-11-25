@@ -33,12 +33,10 @@ export function AuthModal({ isOpen, onClose }) {
         if (!email.includes('@')) {
           throw new Error('Please enter a valid email')
         }
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        register(email, password)
+        await register(email, password)
         toast.success('Account created! Welcome to PolyPerps!')
       } else {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        login(email, password)
+        await login(email, password)
         toast.success('Welcome back!')
       }
       onClose()
@@ -69,7 +67,7 @@ export function AuthModal({ isOpen, onClose }) {
           </h2>
           <p className="text-text-secondary text-sm">
             {mode === 'register'
-              ? 'Start trading prediction markets with up to 20x leverage'
+              ? 'Start trading prediction markets with up to 25x leverage'
               : 'Sign in to access your account'
             }
           </p>

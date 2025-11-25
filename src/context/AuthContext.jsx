@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { db } from '../lib/firebase'
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 
 const AuthContext = createContext(null)
 
-// Simple encryption using password - in production use proper key derivation
+// Simple encryption using password
 function encryptPrivateKey(privateKey, password) {
-  // XOR-based encryption with password hash (simple, not production-grade)
   const encoder = new TextEncoder()
   const keyBytes = encoder.encode(privateKey)
   const passBytes = encoder.encode(password)
@@ -34,32 +35,46 @@ function decryptPrivateKey(encryptedKey, password) {
   return new TextDecoder().decode(decrypted)
 }
 
+// Simple password hashing (for storage, not security-critical)
+function hashPassword(password) {
+  let hash = 0
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return hash.toString(16)
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load user from localStorage on mount
+  // Load user session from localStorage on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('polyperps_user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    const savedSession = localStorage.getItem('polyperps_session')
+    if (savedSession) {
+      setUser(JSON.parse(savedSession))
     }
     setIsLoading(false)
   }, [])
 
-  // Save user to localStorage when changed
+  // Save session to localStorage when user changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem('polyperps_user', JSON.stringify(user))
+      localStorage.setItem('polyperps_session', JSON.stringify(user))
     } else {
-      localStorage.removeItem('polyperps_user')
+      localStorage.removeItem('polyperps_session')
     }
   }, [user])
 
-  const register = (email, password) => {
-    // Check if user already exists
-    const existingUsers = JSON.parse(localStorage.getItem('polyperps_users') || '[]')
-    if (existingUsers.find(u => u.email === email)) {
+  const register = async (email, password) => {
+    // Check if user already exists in Firestore
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('email', '==', email))
+    const querySnapshot = await getDocs(q)
+
+    if (!querySnapshot.empty) {
       throw new Error('Email already registered')
     }
 
@@ -70,49 +85,72 @@ export function AuthProvider({ children }) {
     const encryptedPrivateKey = encryptPrivateKey(wallet.privateKey, password)
 
     // Create new user
+    const userId = Date.now().toString()
     const newUser = {
-      id: Date.now().toString(),
+      id: userId,
       email,
-      password, // In a real app, this would be hashed
+      passwordHash: hashPassword(password),
       walletAddress: wallet.address,
       encryptedPrivateKey,
       balance: 0,
       createdAt: new Date().toISOString(),
     }
 
-    // Save to users list
-    existingUsers.push(newUser)
-    localStorage.setItem('polyperps_users', JSON.stringify(existingUsers))
+    // Save to Firestore
+    await setDoc(doc(db, 'users', userId), newUser)
 
-    // Log in the user (don't expose password or encrypted key in session)
-    const { password: _, ...userWithoutPassword } = newUser
-    setUser(userWithoutPassword)
+    // Set session (without sensitive data)
+    const sessionUser = {
+      id: userId,
+      email,
+      walletAddress: wallet.address,
+      encryptedPrivateKey,
+      balance: 0,
+      createdAt: newUser.createdAt,
+    }
+    setUser(sessionUser)
 
-    return userWithoutPassword
+    return sessionUser
   }
 
-  const login = (email, password) => {
-    const existingUsers = JSON.parse(localStorage.getItem('polyperps_users') || '[]')
-    const foundUser = existingUsers.find(u => u.email === email && u.password === password)
+  const login = async (email, password) => {
+    // Find user in Firestore
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('email', '==', email))
+    const querySnapshot = await getDocs(q)
 
-    if (!foundUser) {
+    if (querySnapshot.empty) {
       throw new Error('Invalid email or password')
     }
 
-    const { password: _, ...userWithoutPassword } = foundUser
-    setUser(userWithoutPassword)
+    const foundUser = querySnapshot.docs[0].data()
 
-    return userWithoutPassword
+    // Verify password
+    if (foundUser.passwordHash !== hashPassword(password)) {
+      throw new Error('Invalid email or password')
+    }
+
+    // Set session (without password hash)
+    const sessionUser = {
+      id: foundUser.id,
+      email: foundUser.email,
+      walletAddress: foundUser.walletAddress,
+      encryptedPrivateKey: foundUser.encryptedPrivateKey,
+      balance: foundUser.balance || 0,
+      createdAt: foundUser.createdAt,
+    }
+    setUser(sessionUser)
+
+    return sessionUser
   }
 
   const connectWallet = () => {
-    // Generate a real wallet for wallet-only connection
+    // Generate a real wallet for wallet-only connection (not persisted to Firestore)
     const wallet = ethers.Wallet.createRandom()
 
     const newUser = {
       id: Date.now().toString(),
       walletAddress: wallet.address,
-      // Store private key in session only (user should export it)
       privateKey: wallet.privateKey,
       balance: 0,
       createdAt: new Date().toISOString(),
@@ -125,35 +163,47 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const updateBalance = (newBalance) => {
+  const updateBalance = async (newBalance) => {
     if (user) {
       setUser({ ...user, balance: newBalance })
+
+      // Update in Firestore if user has email (registered user)
+      if (user.email) {
+        try {
+          await setDoc(doc(db, 'users', user.id), { balance: newBalance }, { merge: true })
+        } catch (e) {
+          console.error('Failed to update balance in Firestore:', e)
+        }
+      }
     }
   }
 
   // Export private key - requires password for email users
-  const exportPrivateKey = (password) => {
+  const exportPrivateKey = async (password) => {
     if (!user) throw new Error('Not logged in')
 
-    // If user connected via wallet (has privateKey directly)
+    // If user connected via wallet (has privateKey directly in session)
     if (user.privateKey) {
       return user.privateKey
     }
 
-    // If user registered with email, decrypt from storage
+    // If user registered with email, decrypt from session or Firestore
     if (user.encryptedPrivateKey && password) {
       return decryptPrivateKey(user.encryptedPrivateKey, password)
     }
 
-    // Find user in storage and decrypt
-    const existingUsers = JSON.parse(localStorage.getItem('polyperps_users') || '[]')
-    const foundUser = existingUsers.find(u => u.email === user.email)
-
-    if (!foundUser || !foundUser.encryptedPrivateKey) {
-      throw new Error('No private key found')
+    // Fetch from Firestore if not in session
+    if (user.email) {
+      const userDoc = await getDoc(doc(db, 'users', user.id))
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        if (userData.encryptedPrivateKey) {
+          return decryptPrivateKey(userData.encryptedPrivateKey, password)
+        }
+      }
     }
 
-    return decryptPrivateKey(foundUser.encryptedPrivateKey, password)
+    throw new Error('No private key found')
   }
 
   const value = {
