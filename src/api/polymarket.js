@@ -1,20 +1,11 @@
 // Polymarket API endpoints
-// Using Vite proxy to bypass CORS restrictions
-// Note: Proxy only works in dev mode - production uses mock data
-const GAMMA_API = '/gamma-api'
-const CLOB_API = '/clob-api'
-
-// Check if we're in production (no Vite proxy available)
-const isProduction = import.meta.env.PROD
+// Use proxy in dev, direct URLs in production
+const isDev = import.meta.env.DEV
+const GAMMA_API = isDev ? '/gamma-api' : 'https://gamma-api.polymarket.com'
+const CLOB_API = isDev ? '/clob-api' : 'https://clob.polymarket.com'
 
 // Fetch markets from Gamma API
 export async function fetchMarkets(options = {}) {
-  // In production, use mock data directly (no proxy available)
-  if (isProduction) {
-    console.log('Production mode - using mock markets')
-    return getMockMarkets()
-  }
-
   const {
     limit = 100,
     offset = 0,
@@ -174,7 +165,7 @@ export async function fetchMidpoint(tokenId) {
 
 // Get order book
 export async function fetchOrderBook(tokenId, basePrice = 0.5) {
-  if (isProduction || !tokenId || tokenId.startsWith('mock-') || tokenId.length < 10) {
+  if (!tokenId || tokenId.startsWith('mock-') || tokenId.length < 10) {
     return getMockOrderBook(basePrice)
   }
 
@@ -221,7 +212,7 @@ export async function fetchOrderBook(tokenId, basePrice = 0.5) {
 
 // Get price history for charts
 export async function fetchPriceHistory(tokenId, interval = '1d', basePrice = 0.5, fidelity = 60) {
-  if (isProduction || !tokenId || tokenId.startsWith('mock-') || tokenId.length < 10) {
+  if (!tokenId || tokenId.startsWith('mock-') || tokenId.length < 10) {
     return getMockPriceHistory(basePrice)
   }
 
