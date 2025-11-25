@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { MarketProvider } from './context/MarketContext'
@@ -67,17 +67,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [showApp, setShowApp] = useState(false)
 
-  useEffect(() => {
-    // Check if we've already shown the loading screen this session
-    const hasLoaded = sessionStorage.getItem('polynomial_loaded')
-    if (hasLoaded) {
-      setLoading(false)
-      setShowApp(true)
-    }
-  }, [])
-
   const handleLoadingComplete = () => {
-    sessionStorage.setItem('polynomial_loaded', 'true')
     setLoading(false)
     setTimeout(() => setShowApp(true), 100)
   }

@@ -77,7 +77,7 @@ export function Header() {
                   ABOUT
                 </Link>
                 <a
-                  href="https://x.com/PolyPerpetuals"
+                  href="https://x.com/PolynomialSol"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-2.5 py-1.5 text-xs text-term-text-dim hover:text-term-green transition-colors"
@@ -226,7 +226,7 @@ export function Header() {
               <Link to="/docs" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
                 ABOUT
               </Link>
-              <a href="https://x.com/PolyPerpetuals" target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
+              <a href="https://x.com/PolynomialSol" target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
                 X
               </a>
             </nav>

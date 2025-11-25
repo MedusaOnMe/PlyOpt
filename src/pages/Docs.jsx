@@ -367,7 +367,7 @@ export function Docs() {
                       <ul className="text-term-text-dim text-xs space-y-2">
                         <li className="flex items-start gap-2">
                           <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
-                          You can lose more than your initial deposit
+                          You can lose your entire margin if liquidated
                         </li>
                         <li className="flex items-start gap-2">
                           <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
