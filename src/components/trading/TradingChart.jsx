@@ -23,9 +23,12 @@ export function TradingChart() {
 
   const [chartType, setChartType] = useState('area') // 'area' or 'candle'
 
-  // Initialize chart
+  // Initialize chart - depends on selectedMarket because the container isn't rendered without it
   useEffect(() => {
-    if (!chartContainerRef.current) return
+    if (!chartContainerRef.current || !selectedMarket) {
+      console.log('[Chart] Container not ready:', { hasContainer: !!chartContainerRef.current, hasMarket: !!selectedMarket })
+      return
+    }
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
@@ -83,6 +86,12 @@ export function TradingChart() {
     })
 
     seriesRef.current = areaSeries
+
+    console.log('[Chart] Initialized with dimensions:', {
+      width: chartContainerRef.current.clientWidth,
+      height: chartContainerRef.current.clientHeight,
+    })
+
     setChartReady(true)
 
     // Handle resize
@@ -110,7 +119,7 @@ export function TradingChart() {
       chart.remove()
       setChartReady(false)
     }
-  }, [])
+  }, [selectedMarket])
 
   // Update data when price history changes
   useEffect(() => {
