@@ -9,6 +9,7 @@ export function TradingChart() {
   const chartContainerRef = useRef(null)
   const chartRef = useRef(null)
   const seriesRef = useRef(null)
+  const [chartReady, setChartReady] = useState(false)
 
   const {
     selectedMarket,
@@ -82,6 +83,7 @@ export function TradingChart() {
     })
 
     seriesRef.current = areaSeries
+    setChartReady(true)
 
     // Handle resize
     const handleResize = () => {
@@ -106,13 +108,14 @@ export function TradingChart() {
     return () => {
       resizeObserver.disconnect()
       chart.remove()
+      setChartReady(false)
     }
   }, [])
 
   // Update data when price history changes
   useEffect(() => {
-    if (!seriesRef.current || !chartRef.current) {
-      console.log('[Chart] No series or chart ref')
+    if (!chartReady || !seriesRef.current || !chartRef.current) {
+      console.log('[Chart] Waiting for chart to be ready...', { chartReady })
       return
     }
 
@@ -160,7 +163,7 @@ export function TradingChart() {
     } catch (e) {
       console.error('[Chart] Error setting data:', e)
     }
-  }, [priceHistory])
+  }, [priceHistory, chartReady])
 
   const currentPrice = getCurrentPrice()
   const change24h = get24hChange()
