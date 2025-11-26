@@ -1,92 +1,129 @@
 import { useState, useEffect } from 'react'
+import { TrendingUp, Activity, Zap, Shield, BarChart3, Wifi } from 'lucide-react'
 
 export function LoadingScreen({ onComplete }) {
-  const [lines, setLines] = useState([])
+  const [currentStep, setCurrentStep] = useState(0)
   const [complete, setComplete] = useState(false)
 
-  const loadingSequence = [
-    { text: '> POLYNOMIAL v1.0', delay: 200 },
-    { text: '> Initializing system...', delay: 400 },
-    { text: '> Connecting to Polymarket API...', delay: 600 },
-    { text: '> Loading leverage markets...', delay: 500 },
-    { text: '> Fetching order book data...', delay: 400 },
-    { text: '> Syncing price feeds...', delay: 300 },
-    { text: '> Calibrating risk engine...', delay: 350 },
-    { text: '> [OK] All systems operational', delay: 500 },
-    { text: '> Launching terminal...', delay: 400 },
+  const loadingSteps = [
+    { text: 'Initializing PolyOptions', icon: Zap, delay: 300 },
+    { text: 'Connecting to markets', icon: Wifi, delay: 400 },
+    { text: 'Loading options chain', icon: BarChart3, delay: 500 },
+    { text: 'Fetching price data', icon: Activity, delay: 400 },
+    { text: 'Calculating Greeks', icon: TrendingUp, delay: 350 },
+    { text: 'Ready to trade', icon: Shield, delay: 300 },
   ]
 
   useEffect(() => {
     let totalDelay = 0
 
-    loadingSequence.forEach((item, index) => {
-      totalDelay += item.delay
+    loadingSteps.forEach((_, index) => {
+      totalDelay += loadingSteps[index].delay
       setTimeout(() => {
-        setLines(prev => [...prev, item.text])
+        setCurrentStep(index + 1)
       }, totalDelay)
     })
 
-    // Complete after all lines
-    totalDelay += 600
+    totalDelay += 500
     setTimeout(() => {
       setComplete(true)
-      setTimeout(onComplete, 300)
+      setTimeout(onComplete, 400)
     }, totalDelay)
   }, [])
 
+  const progress = (currentStep / loadingSteps.length) * 100
+
   return (
-    <div className="fixed inset-0 bg-term-black z-50 flex items-center justify-center">
-      <div className="crt-overlay" />
+    <div className="fixed inset-0 bg-bg-primary z-50 flex items-center justify-center overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/20 rounded-full blur-[120px] animate-pulse-soft" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-call/20 rounded-full blur-[120px] animate-pulse-soft" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-put/10 rounded-full blur-[100px] animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
+      </div>
 
-      <div className="w-full max-w-lg p-8">
-        {/* ASCII Art Logo */}
-        <pre className="text-term-green text-[10px] leading-tight mb-8 text-center font-mono">
-{`
- ██████╗  ██████╗ ██╗  ██╗   ██╗
- ██╔══██╗██╔═══██╗██║  ╚██╗ ██╔╝
- ██████╔╝██║   ██║██║   ╚████╔╝
- ██╔═══╝ ██║   ██║██║    ╚██╔╝
- ██║     ╚██████╔╝███████╗██║
- ╚═╝      ╚═════╝ ╚══════╝╚═╝
-`}
-        </pre>
+      <div className="relative w-full max-w-md px-8">
+        {/* Logo */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-call via-accent-purple to-put bg-clip-text text-transparent">
+              PolyOptions
+            </span>
+          </h1>
+          <p className="text-text-tertiary text-sm">Prediction Market Options</p>
+        </div>
 
-        {/* Terminal output */}
-        <div className="bg-term-dark border border-term-border p-4 font-mono min-h-[280px]">
-          <div className="space-y-1">
-            {lines.map((line, i) => (
-              <div
-                key={i}
-                className={`text-xs ${
-                  line.includes('[OK]') ? 'text-term-green' :
-                  line.includes('POLYNOMIAL') ? 'text-term-green term-glow font-bold' :
-                  'text-term-text-dim'
-                }`}
-              >
-                {line}
-              </div>
-            ))}
-            {!complete && (
-              <div className="text-term-green text-xs">
-                <span className="cursor-blink"></span>
-              </div>
-            )}
+        {/* Loading steps */}
+        <div className="glass rounded-2xl p-6 mb-6">
+          <div className="space-y-3">
+            {loadingSteps.map((step, index) => {
+              const Icon = step.icon
+              const isActive = currentStep === index + 1
+              const isComplete = currentStep > index + 1
+              const isPending = currentStep < index + 1
+
+              return (
+                <div
+                  key={index}
+                  className={`
+                    flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-300
+                    ${isActive ? 'bg-accent-purple/10' : ''}
+                    ${isComplete ? 'opacity-50' : ''}
+                    ${isPending ? 'opacity-30' : ''}
+                  `}
+                >
+                  <div className={`
+                    w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
+                    ${isActive ? 'bg-accent-purple text-white' : ''}
+                    ${isComplete ? 'bg-profit/20 text-profit' : ''}
+                    ${isPending ? 'bg-glass-hover text-text-tertiary' : ''}
+                  `}>
+                    {isComplete ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <Icon className={`w-4 h-4 ${isActive ? 'animate-pulse' : ''}`} />
+                    )}
+                  </div>
+                  <span className={`
+                    text-sm font-medium transition-colors duration-300
+                    ${isActive ? 'text-text-primary' : ''}
+                    ${isComplete ? 'text-text-tertiary' : ''}
+                    ${isPending ? 'text-text-tertiary' : ''}
+                  `}>
+                    {step.text}
+                  </span>
+                  {isActive && (
+                    <div className="ml-auto flex gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-1 bg-term-border overflow-hidden">
+        <div className="h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
           <div
-            className="h-full bg-term-green transition-all duration-300 ease-out"
+            className="h-full rounded-full transition-all duration-500 ease-out"
             style={{
-              width: `${(lines.length / loadingSequence.length) * 100}%`,
-              boxShadow: '0 0 10px #00ff41'
+              width: `${progress}%`,
+              background: 'linear-gradient(90deg, #00D4FF, #8B5CF6, #FF3D71)',
             }}
           />
         </div>
 
-        <p className="text-center text-[10px] text-term-text-dim mt-4 uppercase tracking-widest">
-          Leveraged Prediction Market Trading
+        {/* Status text */}
+        <p className={`
+          text-center text-xs mt-4 transition-all duration-300
+          ${complete ? 'text-profit' : 'text-text-tertiary'}
+        `}>
+          {complete ? 'Launch successful' : `${Math.round(progress)}% complete`}
         </p>
       </div>
     </div>

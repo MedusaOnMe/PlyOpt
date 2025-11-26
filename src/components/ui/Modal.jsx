@@ -36,24 +36,24 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
       />
 
       {/* Modal content */}
-      <div className={`relative w-full ${sizes[size]} bg-term-dark border border-term-border shadow-2xl`}>
+      <div className={`relative w-full ${sizes[size]} glass-elevated rounded-2xl shadow-glass-lg animate-scale-in`}>
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-term-border">
-            <h2 className="text-xs text-term-green uppercase tracking-wider">
-              &gt; {title}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-glass-border">
+            <h2 className="text-lg font-semibold text-text-primary">
+              {title}
             </h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-term-gray transition-colors text-term-text-dim hover:text-term-red"
+              className="p-2 rounded-lg hover:bg-glass-hover transition-colors text-text-tertiary hover:text-text-primary"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         )}
 
         {/* Body */}
-        <div className="p-4">
+        <div className="p-5">
           {children}
         </div>
       </div>

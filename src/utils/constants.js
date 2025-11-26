@@ -17,12 +17,34 @@ export const CATEGORIES = [
   { id: 'business', name: 'Business', icon: 'TrendingUp' },
 ]
 
-// Leverage options (max 25x)
-export const LEVERAGE_OPTIONS = [1, 2, 3, 5, 10, 15, 20, 25]
+// Options-specific constants
+export const OPTION_TYPES = ['CALL', 'PUT']
+export const POSITION_DIRECTIONS = ['LONG', 'SHORT']
 
-// Trading fees (fake)
+// Greeks configuration
+export const GREEKS_CONFIG = [
+  { key: 'delta', symbol: 'Δ', name: 'Delta', description: 'Price sensitivity to underlying movement', range: [-1, 1] },
+  { key: 'gamma', symbol: 'Γ', name: 'Gamma', description: 'Rate of change in delta', range: [0, 0.5] },
+  { key: 'theta', symbol: 'Θ', name: 'Theta', description: 'Time decay per day', range: [-0.5, 0] },
+  { key: 'vega', symbol: 'V', name: 'Vega', description: 'Sensitivity to implied volatility', range: [0, 0.5] },
+  { key: 'iv', symbol: 'IV', name: 'Implied Vol', description: 'Market expected volatility', range: [0, 200] },
+]
+
+// Expiration intervals (days)
+export const EXPIRATION_INTERVALS = {
+  weekly: 7,
+  biweekly: 14,
+  monthly: 30,
+  quarterly: 90,
+}
+
+// Strike price generation
+export const STRIKE_COUNT = 11 // Number of strikes to show (centered around ATM)
+export const STRIKE_STEP_PERCENT = 0.05 // 5% increments
+
+// Trading fees
 export const TRADING_FEE_BPS = 5 // 0.05%
-export const FUNDING_RATE = 0.0001 // 0.01% per 8 hours
+export const MIN_PREMIUM = 0.01 // $0.01 minimum premium
 
 // Chart timeframes - fidelity values from Polymarket API docs
 export const TIMEFRAMES = [
@@ -35,9 +57,18 @@ export const TIMEFRAMES = [
 
 // Default starting balance
 export const DEFAULT_BALANCE = 10000
+export const DEFAULT_QUANTITY = 1
 
-// Fake stats for trust indicators
-export const FAKE_STATS = {
+// Risk thresholds
+export const HIGH_IV_THRESHOLD = 100 // 100% IV is considered high
+export const NEAR_EXPIRY_DAYS = 3 // Days until expiry to show warning
+
+// UI Constants
+export const ANIMATION_DURATION = 200
+export const DEBOUNCE_DELAY = 300
+
+// Platform stats (simulated)
+export const PLATFORM_STATS = {
   totalVolume: 125000000,
   openInterest: 45000000,
   totalTraders: 12400,

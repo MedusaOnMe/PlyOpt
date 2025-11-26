@@ -3,6 +3,7 @@ import { createChart } from 'lightweight-charts'
 import { useMarket } from '../../context/MarketContext'
 import { TIMEFRAMES } from '../../utils/constants'
 import { formatCents, formatChange } from '../../utils/formatters'
+import { TrendingUp, TrendingDown, Activity } from 'lucide-react'
 
 export function TradingChart() {
   const chartContainerRef = useRef(null)
@@ -20,7 +21,7 @@ export function TradingChart() {
     get24hChange,
   } = useMarket()
 
-  // Initialize chart with terminal theme
+  // Initialize chart with modern theme
   useEffect(() => {
     if (!chartContainerRef.current || !selectedMarket) {
       return
@@ -28,40 +29,40 @@ export function TradingChart() {
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: 'solid', color: '#0a0a0a' },
-        textColor: '#606060',
-        fontFamily: 'IBM Plex Mono, monospace',
+        background: { type: 'solid', color: 'transparent' },
+        textColor: '#6B7280',
+        fontFamily: 'Inter, -apple-system, sans-serif',
       },
       grid: {
-        vertLines: { color: '#1a1a1a' },
-        horzLines: { color: '#1a1a1a' },
+        vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
+        horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
       },
       width: chartContainerRef.current.clientWidth,
       height: chartContainerRef.current.clientHeight || 300,
       crosshair: {
         mode: 1,
         vertLine: {
-          color: '#00ff41',
+          color: '#8B5CF6',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#00ff41',
+          labelBackgroundColor: '#8B5CF6',
         },
         horzLine: {
-          color: '#00ff41',
+          color: '#8B5CF6',
           width: 1,
           style: 2,
-          labelBackgroundColor: '#00ff41',
+          labelBackgroundColor: '#8B5CF6',
         },
       },
       rightPriceScale: {
-        borderColor: '#2a2a2a',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         scaleMargins: {
           top: 0.1,
           bottom: 0.1,
         },
       },
       timeScale: {
-        borderColor: '#2a2a2a',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         timeVisible: true,
         secondsVisible: false,
       },
@@ -69,12 +70,12 @@ export function TradingChart() {
 
     chartRef.current = chart
 
-    // Create area series with terminal green
+    // Create area series with cyan color
     const areaSeries = chart.addAreaSeries({
-      lineColor: '#00ff41',
-      topColor: 'rgba(0, 255, 65, 0.2)',
-      bottomColor: 'rgba(0, 255, 65, 0.0)',
-      lineWidth: 1,
+      lineColor: '#00D4FF',
+      topColor: 'rgba(0, 212, 255, 0.2)',
+      bottomColor: 'rgba(0, 212, 255, 0.0)',
+      lineWidth: 2,
       priceFormat: {
         type: 'price',
         precision: 2,
@@ -142,9 +143,9 @@ export function TradingChart() {
         : true
 
       seriesRef.current.applyOptions({
-        lineColor: isPositive ? '#00ff41' : '#ff0040',
-        topColor: isPositive ? 'rgba(0, 255, 65, 0.2)' : 'rgba(255, 0, 64, 0.2)',
-        bottomColor: isPositive ? 'rgba(0, 255, 65, 0.0)' : 'rgba(255, 0, 64, 0.0)',
+        lineColor: isPositive ? '#00D4FF' : '#FF3D71',
+        topColor: isPositive ? 'rgba(0, 212, 255, 0.2)' : 'rgba(255, 61, 113, 0.2)',
+        bottomColor: isPositive ? 'rgba(0, 212, 255, 0.0)' : 'rgba(255, 61, 113, 0.0)',
       })
 
       chartRef.current.timeScale().fitContent()
@@ -159,44 +160,46 @@ export function TradingChart() {
 
   if (!selectedMarket) {
     return (
-      <div className="bg-term-dark border border-term-border h-full flex items-center justify-center">
-        <div className="text-xs text-term-text-dim">
-          &gt; SELECT MARKET_
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <Activity size={32} className="mx-auto mb-3 text-text-tertiary" />
+          <p className="text-sm text-text-secondary">Select a market to view chart</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-term-dark border border-term-border overflow-hidden h-full flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-term-border">
+      <div className="p-4 border-b border-glass-border">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-term-text-dim uppercase tracking-wider mb-1 truncate">
+            <p className="text-sm text-text-tertiary mb-1 truncate">
               {selectedMarket.question}
             </p>
             <div className="flex items-baseline gap-3">
-              <span className={`text-3xl font-bold ${isPositive ? 'text-term-green term-glow' : 'text-term-red term-glow-red'}`}>
+              <span className={`text-3xl font-bold numeric ${isPositive ? 'text-call text-glow-call' : 'text-put text-glow-put'}`}>
                 {formatCents(currentPrice)}
               </span>
-              <span className={`text-base ${isPositive ? 'text-term-green' : 'text-term-red'}`}>
-                {formatChange(change24h)}
-              </span>
+              <div className={`flex items-center gap-1 ${isPositive ? 'text-call' : 'text-put'}`}>
+                {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                <span className="text-sm font-medium">{formatChange(change24h)}</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Timeframe selector */}
-        <div className="flex items-center gap-1 mt-3">
+        <div className="flex items-center gap-1 mt-4">
           {TIMEFRAMES.map((tf) => (
             <button
               key={tf.label}
               onClick={() => setSelectedTimeframe(tf.interval)}
-              className={`px-2.5 py-1.5 text-xs transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 selectedTimeframe === tf.interval
-                  ? 'text-term-green bg-term-green/10'
-                  : 'text-term-text-dim hover:text-term-green'
+                  ? 'bg-accent-purple text-white shadow-glow-purple'
+                  : 'text-text-tertiary hover:text-text-primary hover:bg-glass-hover'
               }`}
             >
               {tf.label}
@@ -206,31 +209,36 @@ export function TradingChart() {
       </div>
 
       {/* Chart */}
-      <div className="relative flex-1" style={{ minHeight: '250px' }}>
+      <div className="relative flex-1" style={{ minHeight: '200px' }}>
         {isLoading && (
-          <div className="absolute inset-0 bg-term-dark/80 flex items-center justify-center z-10">
-            <span className="text-xs text-term-text-dim loading-dots">LOADING</span>
+          <div className="absolute inset-0 bg-bg-secondary/80 backdrop-blur-sm flex items-center justify-center z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-accent-purple animate-pulse-soft" />
+              <span className="text-sm text-text-secondary">Loading chart...</span>
+            </div>
           </div>
         )}
         <div ref={chartContainerRef} className="absolute inset-0" />
       </div>
 
       {/* Bottom stats */}
-      <div className="px-3 py-2 border-t border-term-border flex items-center justify-between text-xs">
-        <div className="flex items-center gap-4 text-term-text-dim">
-          <span>
-            H: <span className="text-term-green">
+      <div className="px-4 py-3 border-t border-glass-border flex items-center justify-between text-xs">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-text-tertiary">24h High</span>
+            <span className="text-call font-medium numeric">
               {formatCents(priceHistory.length > 0 ? Math.max(...priceHistory.map(p => p.value)) : currentPrice)}
             </span>
-          </span>
-          <span>
-            L: <span className="text-term-red">
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-text-tertiary">24h Low</span>
+            <span className="text-put font-medium numeric">
               {formatCents(priceHistory.length > 0 ? Math.min(...priceHistory.map(p => p.value)) : currentPrice)}
             </span>
-          </span>
+          </div>
         </div>
-        <span className="text-term-text-dim">
-          {priceHistory.length} PTS
+        <span className="text-text-tertiary">
+          {priceHistory.length} data points
         </span>
       </div>
     </div>

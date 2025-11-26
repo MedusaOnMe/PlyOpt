@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useMarket } from '../../context/MarketContext'
 import { formatCents, formatNumber, formatCompact } from '../../utils/formatters'
+import { Activity, TrendingUp, TrendingDown } from 'lucide-react'
 
 export function OrderBook() {
   const { orderBook, selectedMarket, isLoading, getCurrentPrice } = useMarket()
@@ -25,43 +26,47 @@ export function OrderBook() {
 
   if (!selectedMarket) {
     return (
-      <div className="bg-term-dark border border-term-border h-full flex items-center justify-center">
-        <div className="text-xs text-term-text-dim">
-          &gt; NO_DATA_
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <Activity size={24} className="mx-auto mb-2 text-text-tertiary" />
+          <p className="text-sm text-text-secondary">No market selected</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-term-dark border border-term-border h-full flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-term-border">
+      <div className="px-4 py-3 border-b border-glass-border">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-term-text-dim uppercase tracking-wider">ORDER_BOOK</span>
-          <div className="flex items-center gap-1.5">
-            <div className="status-online" />
-            <span className="text-xs text-term-text-dim">LIVE</span>
+          <h3 className="text-sm font-semibold text-text-primary">Order Book</h3>
+          <div className="flex items-center gap-2">
+            <div className="status-live" />
+            <span className="text-xs text-text-secondary">Live</span>
           </div>
         </div>
       </div>
 
       {/* Column headers */}
-      <div className="px-3 py-1.5 border-b border-term-border">
-        <div className="flex justify-between text-xs text-term-text-dim uppercase">
-          <span>PRICE</span>
-          <span>SIZE</span>
-          <span>TOTAL</span>
+      <div className="px-4 py-2 border-b border-glass-border bg-bg-secondary/30">
+        <div className="flex justify-between text-[10px] text-text-tertiary uppercase tracking-wider">
+          <span>Price</span>
+          <span>Size</span>
+          <span>Total</span>
         </div>
       </div>
 
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">
-          <span className="text-xs text-term-text-dim loading-dots">LOADING</span>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-accent-purple animate-pulse-soft" />
+            <span className="text-sm text-text-secondary">Loading...</span>
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Asks (NO side - red) */}
+          {/* Asks (Puts - red) */}
           <div className="flex-1 overflow-hidden">
             {asks.map((order, i) => (
               <OrderRow
@@ -75,18 +80,24 @@ export function OrderBook() {
           </div>
 
           {/* Spread / Current price */}
-          <div className="px-3 py-2 bg-term-black border-y border-term-border">
+          <div className="px-4 py-3 bg-bg-tertiary/50 border-y border-glass-border">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-bold text-term-green term-glow">
-                {formatCents(currentPrice)}
-              </span>
-              <span className="text-xs text-term-text-dim">
-                SPR: {formatCents(spread)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-accent-purple numeric text-glow-purple">
+                  {formatCents(currentPrice)}
+                </span>
+                <span className="badge badge-neutral">
+                  Spot
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-text-tertiary">Spread</span>
+                <p className="text-sm text-text-secondary numeric">{formatCents(spread)}</p>
+              </div>
             </div>
           </div>
 
-          {/* Bids (YES side - green) */}
+          {/* Bids (Calls - cyan) */}
           <div className="flex-1 overflow-hidden">
             {bids.map((order, i) => (
               <OrderRow
@@ -102,17 +113,23 @@ export function OrderBook() {
       )}
 
       {/* Footer stats */}
-      <div className="px-3 py-2 border-t border-term-border">
-        <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="px-4 py-3 border-t border-glass-border">
+        <div className="grid grid-cols-2 gap-4 text-xs">
           <div>
-            <span className="text-term-text-dim">BID VOL</span>
-            <p className="text-term-green">
+            <div className="flex items-center gap-1.5 text-text-tertiary mb-1">
+              <TrendingUp size={12} className="text-call" />
+              <span>Bid Volume</span>
+            </div>
+            <p className="text-call font-medium numeric">
               {formatCompact(bids.reduce((acc, b) => acc + b.size * b.price, 0))}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-term-text-dim">ASK VOL</span>
-            <p className="text-term-red">
+            <div className="flex items-center gap-1.5 text-text-tertiary mb-1 justify-end">
+              <TrendingDown size={12} className="text-put" />
+              <span>Ask Volume</span>
+            </div>
+            <p className="text-put font-medium numeric">
               {formatCompact(asks.reduce((acc, a) => acc + a.size * (1 - a.price), 0))}
             </p>
           </div>
@@ -127,20 +144,20 @@ function OrderRow({ price, size, maxSize, side }) {
   const total = price * size
 
   return (
-    <div className="relative px-3 py-1 hover:bg-term-gray cursor-pointer">
+    <div className="relative px-4 py-1.5 hover:bg-glass-hover cursor-pointer transition-colors">
       {/* Depth bar */}
       <div
-        className={`absolute inset-y-0 ${side === 'bid' ? 'left-0 depth-bar-green' : 'right-0 depth-bar-red'}`}
+        className={`absolute inset-y-0 ${side === 'bid' ? 'left-0 depth-bar-call' : 'right-0 depth-bar-put'}`}
         style={{ width: `${depthPercent}%` }}
       />
 
       {/* Content */}
       <div className="relative flex justify-between text-xs">
-        <span className={side === 'bid' ? 'text-term-green' : 'text-term-red'}>
+        <span className={`font-medium numeric ${side === 'bid' ? 'text-call' : 'text-put'}`}>
           {formatCents(price)}
         </span>
-        <span className="text-term-text">{formatNumber(size, 0)}</span>
-        <span className="text-term-text-dim">{formatNumber(total, 0)}</span>
+        <span className="text-text-secondary numeric">{formatNumber(size, 0)}</span>
+        <span className="text-text-tertiary numeric">{formatNumber(total, 0)}</span>
       </div>
     </div>
   )

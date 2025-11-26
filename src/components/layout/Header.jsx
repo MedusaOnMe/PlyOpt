@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { LogOut, User, Menu, X, Plus, Key, Eye, EyeOff, Copy, AlertTriangle, ChevronDown, BarChart3 } from 'lucide-react'
+import { LogOut, User, Menu, X, Plus, Key, Eye, EyeOff, Copy, AlertTriangle, ChevronDown, Wallet, ExternalLink, BookOpen, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useMarket } from '../../context/MarketContext'
 import { AuthModal } from '../auth/AuthModal'
 import { MarketsModal } from '../trading/MarketsModal'
 import { Modal } from '../ui/Modal'
 import { useToast } from '../../context/ToastContext'
-import { formatCents } from '../../utils/formatters'
+import { formatCents, formatChange } from '../../utils/formatters'
+import GradientButton from '../ui/GradientButton'
 
 export function Header() {
   const { user, isAuthenticated, logout, exportPrivateKey } = useAuth()
-  const { selectedMarket } = useMarket()
+  const { selectedMarket, get24hChange } = useMarket()
   const toast = useToast()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -23,6 +24,9 @@ export function Header() {
   const [revealedKey, setRevealedKey] = useState('')
   const [showKey, setShowKey] = useState(false)
 
+  const change24h = get24hChange?.() || 0
+  const isPositive = change24h >= 0
+
   // Close markets modal on ESC
   useEffect(() => {
     const handleEsc = (e) => {
@@ -31,6 +35,15 @@ export function Header() {
     window.addEventListener('keydown', handleEsc)
     return () => window.removeEventListener('keydown', handleEsc)
   }, [])
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowUserMenu(false)
+    if (showUserMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showUserMenu])
 
   const handleExportKey = async () => {
     try {
@@ -55,183 +68,180 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-term-dark border-b border-term-border sticky top-0 z-40">
-        <div className="px-4 py-2">
-          <div className="flex items-center justify-between">
-            {/* Left side: Logo + Nav + Markets */}
-            <div className="flex items-center gap-2">
-              <Link to="/" className="flex items-center gap-2 mr-2">
-                <div className="text-term-green text-lg font-bold tracking-tight term-glow">
-                  <span className="text-term-text-dim">[</span>
-                  POLYNOMIAL
-                  <span className="text-term-text-dim">]</span>
-                </div>
-              </Link>
-
-              {/* Nav Links - right next to logo */}
-              <nav className="hidden md:flex items-center">
-                <Link to="/" className="px-2.5 py-1.5 text-xs text-term-text-dim hover:text-term-green transition-colors">
-                  TERMINAL
-                </Link>
-                <Link to="/docs" className="px-2.5 py-1.5 text-xs text-term-text-dim hover:text-term-green transition-colors">
-                  ABOUT
-                </Link>
-                <a
-                  href="https://x.com/PolynomialSol"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1.5 text-xs text-term-text-dim hover:text-term-green transition-colors"
-                >
-                  X
-                </a>
-              </nav>
-
-              {/* Divider */}
-              <div className="hidden md:block w-px h-5 bg-term-border mx-2" />
-
-              {/* Markets Button - More prominent */}
-              <button
-                onClick={() => setShowMarketsModal(true)}
-                className="hidden sm:flex items-center gap-2 px-3 py-1.5 border-2 border-term-green bg-term-green/10 hover:bg-term-green/20 transition-all group"
-                style={{ boxShadow: '0 0 15px #00ff41, 0 0 30px rgba(0,255,65,0.4)' }}
-              >
-                <BarChart3 className="w-4 h-4 text-term-green" />
-                {selectedMarket ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-term-text max-w-[200px] truncate">
-                      {selectedMarket.question}
-                    </span>
-                    <span className="text-sm text-term-green font-bold term-glow">
-                      {formatCents(selectedMarket.yesPrice || 0.5)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-term-green font-medium">SELECT MARKET</span>
-                )}
-                <ChevronDown className="w-3 h-3 text-term-green" />
-              </button>
-
-              {/* Mobile Markets Button */}
-              <button
-                onClick={() => setShowMarketsModal(true)}
-                className="sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-term-green bg-term-green/10"
-                style={{ boxShadow: '0 0 15px #00ff41, 0 0 30px rgba(0,255,65,0.4)' }}
-              >
-                <BarChart3 className="w-4 h-4 text-term-green" />
-                <span className="text-sm text-term-green font-medium">MARKETS</span>
-              </button>
-            </div>
-
-            {/* Right side */}
-            <div className="flex items-center gap-3">
-              {/* Status indicator */}
-              <div className="hidden lg:flex items-center gap-2 text-[10px] text-term-text-dim">
-                <div className="status-online" />
-                <span>LIVE</span>
+      <header className="glass-solid border-b border-glass-border sticky top-0 z-40">
+        <div className="h-14 px-4 lg:px-6 flex items-center justify-between">
+          {/* Left: Logo */}
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-call via-accent-purple to-put flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PO</span>
               </div>
+              <span className="text-lg font-semibold text-text-primary hidden sm:block">
+                PolyOptions
+              </span>
+            </Link>
 
-              {isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-3 px-3 py-1.5 border border-term-border hover:border-term-green/50 transition-colors"
-                  >
-                    {user.balance > 0 ? (
-                      <span className="text-xs text-term-green">
-                        ${user.balance?.toLocaleString()}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setShowDepositModal(true); setShowUserMenu(false) }}
-                        className="flex items-center gap-1 text-xs text-term-amber hover:text-term-amber-dim"
-                      >
-                        <Plus className="w-3 h-3" />
-                        DEPOSIT
-                      </button>
-                    )}
-                    <span className="text-term-border">|</span>
-                    <span className="text-xs text-term-text max-w-[80px] truncate">
-                      {user.email || user.walletAddress?.slice(0, 6)}
-                    </span>
-                  </button>
-
-                  {/* Dropdown menu */}
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-1 w-56 bg-black border border-term-border shadow-xl z-50">
-                      <div className="px-3 py-2 border-b border-term-border bg-black">
-                        <p className="text-[10px] text-term-text-dim uppercase">Session</p>
-                        <p className="text-xs text-term-text truncate mt-1">
-                          {user.email || user.walletAddress?.slice(0, 20)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => { setShowDepositModal(true); setShowUserMenu(false) }}
-                        className="w-full px-3 py-2 text-left text-xs text-term-green hover:bg-term-green/10 transition-colors flex items-center gap-2"
-                      >
-                        <Plus className="w-3 h-3" />
-                        &gt; DEPOSIT
-                      </button>
-                      <button
-                        onClick={() => { setShowExportModal(true); setShowUserMenu(false) }}
-                        className="w-full px-3 py-2 text-left text-xs text-term-amber hover:bg-term-amber/10 transition-colors flex items-center gap-2"
-                      >
-                        <Key className="w-3 h-3" />
-                        &gt; EXPORT_KEY
-                      </button>
-                      <div className="border-t border-term-border">
-                        <button
-                          onClick={() => {
-                            logout()
-                            setShowUserMenu(false)
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs text-term-red hover:bg-term-red/10 transition-colors flex items-center gap-2"
-                        >
-                          <LogOut className="w-3 h-3" />
-                          &gt; LOGOUT
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="flex items-center gap-2 px-4 py-1.5 border border-term-green text-term-green text-xs hover:bg-term-green hover:text-term-black transition-colors"
-                >
-                  <User className="w-3 h-3" />
-                  CONNECT
-                </button>
-              )}
-
-              {/* Mobile menu button */}
+            {/* Market ticker - centered on desktop */}
+            {selectedMarket && (
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 hover:bg-term-gray transition-colors"
+                onClick={() => setShowMarketsModal(true)}
+                className="hidden md:flex items-center gap-4 px-4 py-1.5 rounded-lg bg-bg-tertiary/50 hover:bg-bg-tertiary transition-all group"
               >
-                {mobileMenuOpen ? (
-                  <X className="w-4 h-4 text-term-text" />
-                ) : (
-                  <Menu className="w-4 h-4 text-term-text" />
-                )}
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-profit animate-pulse" />
+                  <span className="text-sm text-text-secondary max-w-[280px] truncate group-hover:text-text-primary transition-colors">
+                    {selectedMarket.question}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 border-l border-glass-border pl-3">
+                  <span className="text-sm font-semibold text-text-primary font-mono">
+                    {formatCents(selectedMarket.yesPrice || 0.5)}
+                  </span>
+                  <span className={`text-xs font-medium font-mono ${isPositive ? 'text-profit' : 'text-loss'}`}>
+                    {formatChange(change24h)}
+                  </span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-text-tertiary group-hover:text-text-secondary" />
               </button>
-            </div>
+            )}
           </div>
 
-          {/* Mobile Nav */}
-          {mobileMenuOpen && (
-            <nav className="md:hidden mt-3 pt-3 border-t border-term-border flex flex-col">
-              <Link to="/" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
-                TERMINAL
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {/* Quick links */}
+            <div className="hidden lg:flex items-center gap-1 mr-2">
+              <Link
+                to="/docs"
+                className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-glass-hover transition-all"
+                title="Documentation"
+              >
+                <BookOpen size={18} />
               </Link>
-              <Link to="/docs" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
-                ABOUT
-              </Link>
-              <a href="https://x.com/PolynomialSol" target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-xs text-term-text-dim hover:text-term-green">
-                X
+              <a
+                href="https://x.com/PolyOptions_"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-glass-hover transition-all"
+                title="Twitter"
+              >
+                <ExternalLink size={18} />
               </a>
-            </nav>
-          )}
+            </div>
+
+            {/* Mobile Markets Button */}
+            <button
+              onClick={() => setShowMarketsModal(true)}
+              className="md:hidden p-2 rounded-lg glass-elevated text-text-secondary"
+            >
+              <ChevronDown size={18} />
+            </button>
+
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowUserMenu(!showUserMenu)
+                  }}
+                  className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl glass-elevated hover:bg-bg-tertiary transition-all"
+                >
+                  <span className="text-sm text-profit font-semibold font-mono">
+                    ${user.balance?.toLocaleString() || '0'}
+                  </span>
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-purple to-call flex items-center justify-center">
+                    <User size={14} className="text-white" />
+                  </div>
+                </button>
+
+                {/* Dropdown menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-56 glass-elevated rounded-xl shadow-glass-lg overflow-hidden animate-fade-in z-50">
+                    <div className="px-4 py-3 border-b border-glass-border">
+                      <p className="text-sm text-text-primary truncate font-medium">
+                        {user.email || `${user.walletAddress?.slice(0, 6)}...${user.walletAddress?.slice(-4)}`}
+                      </p>
+                    </div>
+
+                    <div className="p-1.5">
+                      <button
+                        onClick={() => { setShowDepositModal(true); setShowUserMenu(false) }}
+                        className="w-full px-3 py-2 rounded-lg text-left text-sm text-text-primary hover:bg-glass-hover transition-all flex items-center gap-2"
+                      >
+                        <Plus size={16} className="text-profit" />
+                        Deposit
+                      </button>
+
+                      <button
+                        onClick={() => { setShowExportModal(true); setShowUserMenu(false) }}
+                        className="w-full px-3 py-2 rounded-lg text-left text-sm text-text-primary hover:bg-glass-hover transition-all flex items-center gap-2"
+                      >
+                        <Key size={16} className="text-accent-gold" />
+                        Export Key
+                      </button>
+                    </div>
+
+                    <div className="border-t border-glass-border p-1.5">
+                      <button
+                        onClick={() => {
+                          logout()
+                          setShowUserMenu(false)
+                        }}
+                        className="w-full px-3 py-2 rounded-lg text-left text-sm text-loss hover:bg-loss/10 transition-all flex items-center gap-2"
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <GradientButton
+                variant="purple"
+                size="sm"
+                onClick={() => setShowAuthModal(true)}
+              >
+                <Wallet size={14} className="mr-1.5" />
+                Connect
+              </GradientButton>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-glass-hover transition-colors"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-text-primary" />
+              ) : (
+                <Menu className="w-5 h-5 text-text-primary" />
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Nav */}
+        {mobileMenuOpen && (
+          <nav className="lg:hidden px-4 pb-4 pt-2 border-t border-glass-border flex flex-col gap-1 animate-fade-in">
+            <Link
+              to="/docs"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-4 py-3 rounded-lg text-sm text-text-primary hover:bg-glass-hover transition-all flex items-center gap-2"
+            >
+              <BookOpen size={16} />
+              Documentation
+            </Link>
+            <a
+              href="https://x.com/PolyOptions_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-3 rounded-lg text-sm text-text-primary hover:bg-glass-hover transition-all flex items-center gap-2"
+            >
+              <ExternalLink size={16} />
+              Twitter
+            </a>
+          </nav>
+        )}
       </header>
 
       {/* Markets Modal */}
@@ -240,16 +250,18 @@ export function Header() {
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
 
       {/* Deposit Modal */}
-      <Modal isOpen={showDepositModal} onClose={() => setShowDepositModal(false)} title="DEPOSIT" size="md">
+      <Modal isOpen={showDepositModal} onClose={() => setShowDepositModal(false)} title="Deposit Funds" size="md">
         <div className="space-y-4">
-          <div className="text-xs text-term-text-dim">
-            Send USDC to your deposit address to start trading
-          </div>
+          <p className="text-sm text-text-secondary">
+            Send USDC to your deposit address to start trading options
+          </p>
 
-          <div className="border border-term-border p-3">
-            <p className="text-[10px] text-term-text-dim uppercase mb-2">Deposit Address (Polygon)</p>
+          <div className="p-4 rounded-xl bg-bg-tertiary border border-glass-border">
+            <p className="text-xs text-text-tertiary uppercase tracking-wider mb-2">
+              Deposit Address (Polygon)
+            </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs text-term-green bg-term-black px-2 py-1.5 break-all">
+              <code className="flex-1 text-sm text-accent-purple bg-bg-secondary px-3 py-2 rounded-lg break-all font-mono">
                 {user?.walletAddress || '0x...'}
               </code>
               <button
@@ -257,33 +269,39 @@ export function Header() {
                   navigator.clipboard.writeText(user?.walletAddress || '')
                   toast.success('Address copied')
                 }}
-                className="px-2 py-1.5 border border-term-border text-xs text-term-text hover:border-term-green hover:text-term-green transition-colors"
+                className="px-3 py-2 rounded-lg bg-bg-secondary hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-all"
               >
-                COPY
+                <Copy size={16} />
               </button>
             </div>
           </div>
 
-          <div className="border border-term-amber/30 bg-term-amber/5 p-3 text-xs text-term-amber">
-            <strong>NOTE:</strong> Only send USDC on Polygon network.
-          </div>
-
-          <div className="text-center text-[10px] text-term-text-dim">
-            MIN DEPOSIT: $10 USDC
+          <div className="p-4 rounded-xl bg-accent-gold/10 border border-accent-gold/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="text-accent-gold shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-accent-gold font-medium">Important</p>
+                <p className="text-sm text-text-secondary mt-1">
+                  Only send USDC on Polygon network. Minimum deposit: $10 USDC
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>
 
       {/* Export Private Key Modal */}
-      <Modal isOpen={showExportModal} onClose={closeExportModal} title="EXPORT_KEY" size="md">
+      <Modal isOpen={showExportModal} onClose={closeExportModal} title="Export Private Key" size="md">
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 border border-term-red/30 bg-term-red/5">
-            <AlertTriangle className="w-4 h-4 text-term-red flex-shrink-0 mt-0.5" />
-            <div className="text-xs">
-              <p className="text-term-red font-medium mb-1">WARNING: SENSITIVE DATA</p>
-              <p className="text-term-text-dim">
-                Never share your private key. Anyone with access has full control.
-              </p>
+          <div className="p-4 rounded-xl bg-loss/10 border border-loss/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="text-loss shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-loss font-medium">Security Warning</p>
+                <p className="text-sm text-text-secondary mt-1">
+                  Never share your private key. Anyone with access has full control of your funds.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -291,29 +309,32 @@ export function Header() {
             <>
               {user?.email && (
                 <div>
-                  <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+                  <label className="block text-xs text-text-tertiary uppercase tracking-wider mb-2">
                     Enter password to decrypt
                   </label>
                   <input
                     type="password"
                     value={exportPassword}
                     onChange={(e) => setExportPassword(e.target.value)}
-                    placeholder="********"
-                    className="w-full bg-term-black border border-term-border px-3 py-2 text-xs text-term-text placeholder:text-term-text-dim"
+                    placeholder="Enter your password"
+                    className="w-full bg-bg-tertiary border border-glass-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-purple"
                   />
                 </div>
               )}
-              <button
+              <GradientButton
+                variant="outline"
+                size="lg"
+                fullWidth
                 onClick={handleExportKey}
-                className="w-full px-4 py-2 border border-term-amber text-term-amber text-xs hover:bg-term-amber hover:text-term-black transition-colors"
               >
-                &gt; REVEAL_KEY
-              </button>
+                <Key size={16} className="mr-2" />
+                Reveal Private Key
+              </GradientButton>
             </>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+                <label className="block text-xs text-text-tertiary uppercase tracking-wider mb-2">
                   Private Key
                 </label>
                 <div className="relative">
@@ -321,30 +342,30 @@ export function Header() {
                     type={showKey ? 'text' : 'password'}
                     value={revealedKey}
                     readOnly
-                    className="w-full bg-term-black border border-term-border px-3 py-2 pr-16 text-xs text-term-green"
+                    className="w-full bg-bg-tertiary border border-glass-border rounded-lg px-4 py-3 pr-20 text-sm text-accent-purple font-mono"
                   />
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     <button
                       onClick={() => setShowKey(!showKey)}
-                      className="p-1 hover:bg-term-gray"
+                      className="p-2 rounded-lg hover:bg-glass-hover transition-colors"
                     >
                       {showKey ? (
-                        <EyeOff className="w-3 h-3 text-term-text-dim" />
+                        <EyeOff size={16} className="text-text-tertiary" />
                       ) : (
-                        <Eye className="w-3 h-3 text-term-text-dim" />
+                        <Eye size={16} className="text-text-tertiary" />
                       )}
                     </button>
                     <button
                       onClick={handleCopyKey}
-                      className="p-1 hover:bg-term-gray"
+                      className="p-2 rounded-lg hover:bg-glass-hover transition-colors"
                     >
-                      <Copy className="w-3 h-3 text-term-text-dim" />
+                      <Copy size={16} className="text-text-tertiary" />
                     </button>
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-term-text-dim">
-                Import this key into MetaMask or any EVM wallet to access funds on Polygon.
+              <p className="text-xs text-text-tertiary">
+                Import this key into MetaMask or any EVM wallet to access your funds on Polygon.
               </p>
             </div>
           )}
