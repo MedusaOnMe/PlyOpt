@@ -52,10 +52,10 @@ function PayoffDiagram() {
 
   const { points, minPrice, maxPrice, maxPnl, minPnl, pnlRange, breakeven, strike, isCall } = chartData
 
-  // SVG dimensions - wider aspect ratio
+  // SVG dimensions - optimized for readability
   const width = 500
-  const height = 160
-  const padding = { top: 15, right: 15, bottom: 25, left: 45 }
+  const height = 280
+  const padding = { top: 30, right: 25, bottom: 40, left: 60 }
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
 
@@ -93,65 +93,69 @@ function PayoffDiagram() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-glass-border flex items-center justify-between shrink-0">
-        <h3 className="text-xs font-semibold text-text-primary">Payoff at Expiry</h3>
-        <div className="flex items-center gap-3 text-[10px] text-text-tertiary">
-          <span className="flex items-center gap-1">
-            <div className="w-2 h-0.5 bg-accent-purple" /> Strike
+      <div className="px-4 py-2.5 border-b border-glass-border flex items-center justify-between shrink-0">
+        <h3 className="text-sm font-semibold text-text-primary">Payoff at Expiry</h3>
+        <div className="flex items-center gap-4 text-xs text-text-tertiary">
+          <span className="flex items-center gap-1.5">
+            <div className="w-3 h-0.5 bg-accent-purple rounded" /> Strike
           </span>
-          <span className="flex items-center gap-1">
-            <div className="w-2 h-0.5 bg-accent-gold" /> BE
+          <span className="flex items-center gap-1.5">
+            <div className="w-3 h-0.5 bg-accent-gold rounded" /> Breakeven
           </span>
-          <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${isCall ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
+          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${isCall ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
             {selectedType}
           </span>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="flex-1 p-2 min-h-0">
+      {/* Chart - fills remaining space */}
+      <div className="flex-1 p-3 min-h-0">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={isCall ? '#00D4FF' : '#FF3D71'} stopOpacity="0.3" />
+              <stop offset="0%" stopColor={isCall ? '#00D4FF' : '#FF3D71'} stopOpacity="0.4" />
               <stop offset="100%" stopColor={isCall ? '#00D4FF' : '#FF3D71'} stopOpacity="0.05" />
             </linearGradient>
             <linearGradient id="lossGradient" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#EF4444" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#EF4444" stopOpacity="0.05" />
             </linearGradient>
           </defs>
 
+          {/* Grid lines */}
+          <line x1={padding.left} y1={yScale(maxPnl)} x2={width - padding.right} y2={yScale(maxPnl)} stroke="rgba(255,255,255,0.05)" />
+          <line x1={padding.left} y1={yScale(minPnl)} x2={width - padding.right} y2={yScale(minPnl)} stroke="rgba(255,255,255,0.05)" />
+
           {/* Zero line */}
-          <line x1={padding.left} y1={zeroY} x2={width - padding.right} y2={zeroY} stroke="rgba(255,255,255,0.1)" strokeDasharray="4,4" />
+          <line x1={padding.left} y1={zeroY} x2={width - padding.right} y2={zeroY} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="6,4" />
 
           {/* Fill areas */}
           {profitPath !== ' Z' && <path d={profitPath} fill="url(#profitGradient)" />}
           {lossPath !== ' Z' && <path d={lossPath} fill="url(#lossGradient)" />}
 
           {/* Payoff line */}
-          <path d={pathD} fill="none" stroke={isCall ? '#00D4FF' : '#FF3D71'} strokeWidth="2" strokeLinecap="round" />
+          <path d={pathD} fill="none" stroke={isCall ? '#00D4FF' : '#FF3D71'} strokeWidth="3" strokeLinecap="round" />
 
           {/* Strike line */}
-          <line x1={xScale(strike)} y1={padding.top} x2={xScale(strike)} y2={height - padding.bottom} stroke="#8B5CF6" strokeWidth="1" strokeDasharray="4,4" />
-          <text x={xScale(strike)} y={height - padding.bottom + 12} fill="#8B5CF6" fontSize="9" textAnchor="middle">{strike}¢</text>
+          <line x1={xScale(strike)} y1={padding.top} x2={xScale(strike)} y2={height - padding.bottom} stroke="#8B5CF6" strokeWidth="2" strokeDasharray="6,4" />
+          <text x={xScale(strike)} y={height - padding.bottom + 18} fill="#8B5CF6" fontSize="14" fontWeight="600" textAnchor="middle">{strike}¢</text>
 
           {/* Breakeven line */}
-          <line x1={xScale(breakeven)} y1={padding.top} x2={xScale(breakeven)} y2={height - padding.bottom} stroke="#F59E0B" strokeWidth="1" strokeDasharray="2,2" />
-          <text x={xScale(breakeven)} y={padding.top - 4} fill="#F59E0B" fontSize="9" textAnchor="middle">{breakeven.toFixed(0)}¢</text>
+          <line x1={xScale(breakeven)} y1={padding.top} x2={xScale(breakeven)} y2={height - padding.bottom} stroke="#F59E0B" strokeWidth="2" strokeDasharray="4,3" />
+          <text x={xScale(breakeven)} y={padding.top - 8} fill="#F59E0B" fontSize="13" fontWeight="500" textAnchor="middle">{breakeven.toFixed(1)}¢</text>
 
           {/* Spot marker */}
-          <circle cx={xScale(spotPrice)} cy={zeroY} r="3" fill="#8B5CF6" />
-          <text x={xScale(spotPrice)} y={zeroY + 12} fill="#9CA3AF" fontSize="8" textAnchor="middle">Spot</text>
+          <circle cx={xScale(spotPrice)} cy={zeroY} r="5" fill="#8B5CF6" />
+          <text x={xScale(spotPrice)} y={zeroY + 18} fill="#9CA3AF" fontSize="12" fontWeight="500" textAnchor="middle">Spot</text>
 
           {/* Y-axis labels */}
-          <text x={padding.left - 4} y={yScale(maxPnl)} fill="#10B981" fontSize="9" textAnchor="end" dominantBaseline="middle">+${maxPnl.toFixed(0)}</text>
-          <text x={padding.left - 4} y={zeroY} fill="#6B7280" fontSize="9" textAnchor="end" dominantBaseline="middle">$0</text>
-          <text x={padding.left - 4} y={yScale(minPnl)} fill="#EF4444" fontSize="9" textAnchor="end" dominantBaseline="middle">-${Math.abs(minPnl).toFixed(0)}</text>
+          <text x={padding.left - 8} y={yScale(maxPnl)} fill="#10B981" fontSize="13" fontWeight="600" textAnchor="end" dominantBaseline="middle">+${maxPnl.toFixed(0)}</text>
+          <text x={padding.left - 8} y={zeroY} fill="#6B7280" fontSize="13" fontWeight="500" textAnchor="end" dominantBaseline="middle">$0</text>
+          <text x={padding.left - 8} y={yScale(minPnl)} fill="#EF4444" fontSize="13" fontWeight="600" textAnchor="end" dominantBaseline="middle">-${Math.abs(minPnl).toFixed(0)}</text>
 
           {/* X-axis labels */}
-          <text x={padding.left} y={height - 5} fill="#6B7280" fontSize="8" textAnchor="start">{minPrice.toFixed(0)}¢</text>
-          <text x={width - padding.right} y={height - 5} fill="#6B7280" fontSize="8" textAnchor="end">{maxPrice.toFixed(0)}¢</text>
+          <text x={padding.left} y={height - 8} fill="#6B7280" fontSize="12" textAnchor="start">{minPrice.toFixed(0)}¢</text>
+          <text x={width - padding.right} y={height - 8} fill="#6B7280" fontSize="12" textAnchor="end">{maxPrice.toFixed(0)}¢</text>
         </svg>
       </div>
     </div>

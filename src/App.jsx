@@ -23,11 +23,11 @@ function TradingPage() {
   const [mobileTab, setMobileTab] = useState('chart')
 
   return (
-    <div className="h-screen bg-bg-primary flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-bg-primary flex flex-col">
       <Header />
 
       {/* Main content */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-auto">
         {/* Collapsible Markets Sidebar */}
         <div className={`hidden lg:flex transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
           <MarketsSidebar />
@@ -45,10 +45,10 @@ function TradingPage() {
           )}
         </button>
 
-        {/* Main workspace - Desktop */}
-        <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
+        {/* Main workspace - Desktop - uses fixed heights for scrollability */}
+        <div className="hidden lg:flex flex-1 flex-col">
           {/* Row 1: Chart + OrderBook + Order Panel */}
-          <div className="flex-[50] flex min-h-0 border-b border-glass-border">
+          <div className="h-[400px] flex border-b border-glass-border shrink-0">
             {/* Chart */}
             <div className="flex-1 min-w-0 border-r border-glass-border">
               <TradingChart />
@@ -66,7 +66,7 @@ function TradingPage() {
           </div>
 
           {/* Row 2: Options Chain + Payoff */}
-          <div className="flex-[35] flex min-h-0 border-b border-glass-border">
+          <div className="h-[380px] flex border-b border-glass-border shrink-0">
             {/* Options Chain */}
             <div className="flex-1 min-w-0 border-r border-glass-border overflow-hidden">
               <OptionsChain />
@@ -79,7 +79,7 @@ function TradingPage() {
           </div>
 
           {/* Row 3: Positions - Full Width */}
-          <div className="flex-[15] min-h-[120px] overflow-hidden">
+          <div className="h-[200px] shrink-0">
             <PositionsPanel />
           </div>
         </div>

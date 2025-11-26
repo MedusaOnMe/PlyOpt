@@ -171,40 +171,35 @@ export function TradingChart() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-glass-border">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-text-tertiary mb-1 truncate">
-              {selectedMarket.question}
-            </p>
-            <div className="flex items-baseline gap-3">
-              <span className={`text-3xl font-bold numeric ${isPositive ? 'text-call text-glow-call' : 'text-put text-glow-put'}`}>
-                {formatCents(currentPrice)}
-              </span>
-              <div className={`flex items-center gap-1 ${isPositive ? 'text-call' : 'text-put'}`}>
-                {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                <span className="text-sm font-medium">{formatChange(change24h)}</span>
-              </div>
+      {/* Header - Compact */}
+      <div className="px-3 py-2 border-b border-glass-border shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className={`text-xl font-bold numeric ${isPositive ? 'text-call' : 'text-put'}`}>
+              {formatCents(currentPrice)}
+            </span>
+            <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-call' : 'text-put'}`}>
+              {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              <span className="font-medium">{formatChange(change24h)}</span>
             </div>
           </div>
-        </div>
 
-        {/* Timeframe selector */}
-        <div className="flex items-center gap-1 mt-4">
-          {TIMEFRAMES.map((tf) => (
-            <button
-              key={tf.label}
-              onClick={() => setSelectedTimeframe(tf.interval)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                selectedTimeframe === tf.interval
-                  ? 'bg-accent-purple text-white shadow-glow-purple'
-                  : 'text-text-tertiary hover:text-text-primary hover:bg-glass-hover'
-              }`}
-            >
-              {tf.label}
-            </button>
-          ))}
+          {/* Timeframe selector - inline */}
+          <div className="flex items-center gap-0.5">
+            {TIMEFRAMES.map((tf) => (
+              <button
+                key={tf.label}
+                onClick={() => setSelectedTimeframe(tf.interval)}
+                className={`px-2 py-1 text-[10px] font-medium rounded transition-all ${
+                  selectedTimeframe === tf.interval
+                    ? 'bg-accent-purple text-white'
+                    : 'text-text-tertiary hover:text-text-primary hover:bg-glass-hover'
+                }`}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

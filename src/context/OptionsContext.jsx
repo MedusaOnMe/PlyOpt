@@ -54,50 +54,80 @@ function formatExpirationLabel(date, isMonthly = false) {
   return isMonthly ? `${month} ${day} (M)` : `${month} ${day}`
 }
 
-// Simple Black-Scholes approximation for options pricing
-function calculateOptionPrice(spot, strike, daysToExpiry, iv, type) {
-  const T = daysToExpiry / 365
-  const sigma = iv / 100
+// Standard normal CDF approximation (Abramowitz and Stegun)
+function normalCDF(x) {
+  const a1 = 0.254829592
+  const a2 = -0.284496736
+  const a3 = 1.421413741
+  const a4 = -1.453152027
+  const a5 = 1.061405429
+  const p = 0.3275911
 
-  // Simplified calculation
-  const moneyness = spot / strike
-  const timeValue = sigma * Math.sqrt(T) * spot * 0.4
+  const sign = x < 0 ? -1 : 1
+  x = Math.abs(x) / Math.sqrt(2)
 
-  let intrinsicValue = 0
-  if (type === 'CALL') {
-    intrinsicValue = Math.max(0, spot - strike)
-  } else {
-    intrinsicValue = Math.max(0, strike - spot)
-  }
+  const t = 1.0 / (1.0 + p * x)
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x)
 
-  // Add some randomness for realism
-  const noise = (Math.random() - 0.5) * 0.02 * spot
-
-  const price = Math.max(0.01, intrinsicValue + timeValue + noise)
-  return Math.round(price * 100) / 100
+  return 0.5 * (1.0 + sign * y)
 }
 
-// Calculate Greeks (simplified)
-function calculateGreeks(spot, strike, daysToExpiry, iv, type, premium) {
-  const T = Math.max(daysToExpiry / 365, 0.001)
-  const moneyness = spot / strike
+// Standard normal PDF
+function normalPDF(x) {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI)
+}
 
-  // Delta (simplified)
-  let delta
+// Black-Scholes option pricing
+function calculateOptionPrice(spot, strike, daysToExpiry, iv, type) {
+  const T = Math.max(daysToExpiry / 365, 0.001)
+  const sigma = iv / 100
+  const r = 0.05 // Risk-free rate 5%
+
+  // Calculate d1 and d2
+  const d1 = (Math.log(spot / strike) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T))
+  const d2 = d1 - sigma * Math.sqrt(T)
+
+  let price
   if (type === 'CALL') {
-    delta = 0.5 + 0.5 * Math.tanh((moneyness - 1) * 5 / Math.sqrt(T))
+    price = spot * normalCDF(d1) - strike * Math.exp(-r * T) * normalCDF(d2)
   } else {
-    delta = -0.5 + 0.5 * Math.tanh((moneyness - 1) * 5 / Math.sqrt(T))
+    price = strike * Math.exp(-r * T) * normalCDF(-d2) - spot * normalCDF(-d1)
   }
 
-  // Gamma (peak at ATM)
-  const gamma = 0.3 * Math.exp(-Math.pow(moneyness - 1, 2) * 20) / Math.sqrt(T)
+  return Math.max(0.01, Math.round(price * 100) / 100)
+}
 
-  // Theta (time decay, always negative for long options)
-  const theta = -(premium * 0.1 / Math.sqrt(T)) / 365
+// Calculate Greeks using Black-Scholes formulas
+function calculateGreeks(spot, strike, daysToExpiry, iv, type) {
+  const T = Math.max(daysToExpiry / 365, 0.001)
+  const sigma = iv / 100
+  const r = 0.05
 
-  // Vega (sensitivity to IV)
-  const vega = spot * Math.sqrt(T) * 0.01 * Math.exp(-Math.pow(moneyness - 1, 2) * 10)
+  const d1 = (Math.log(spot / strike) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T))
+  const d2 = d1 - sigma * Math.sqrt(T)
+
+  // Delta
+  let delta
+  if (type === 'CALL') {
+    delta = normalCDF(d1)
+  } else {
+    delta = normalCDF(d1) - 1
+  }
+
+  // Gamma (same for calls and puts)
+  const gamma = normalPDF(d1) / (spot * sigma * Math.sqrt(T))
+
+  // Theta (per day)
+  let theta
+  const term1 = -(spot * normalPDF(d1) * sigma) / (2 * Math.sqrt(T))
+  if (type === 'CALL') {
+    theta = (term1 - r * strike * Math.exp(-r * T) * normalCDF(d2)) / 365
+  } else {
+    theta = (term1 + r * strike * Math.exp(-r * T) * normalCDF(-d2)) / 365
+  }
+
+  // Vega (per 1% change in IV)
+  const vega = spot * Math.sqrt(T) * normalPDF(d1) / 100
 
   return {
     delta: Math.round(delta * 100) / 100,
@@ -122,29 +152,55 @@ function generateStrikes(spotPrice, count = STRIKE_COUNT) {
   return strikes
 }
 
-// Generate full options chain
-function generateOptionsChain(spotPrice, expiration, baseIV = 45) {
+// Generate realistic volume/OI based on moneyness (higher near ATM)
+function generateVolumeOI(moneyness, isCall, baseVolume = 5000, baseOI = 25000) {
+  // ATM options have highest activity
+  const atmFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 15)
+
+  // Slight bias: calls more active above spot, puts below
+  const directionalBias = isCall
+    ? (moneyness > 1 ? 0.8 : 1.2)
+    : (moneyness < 1 ? 0.8 : 1.2)
+
+  const volumeMultiplier = atmFactor * directionalBias
+  const volume = Math.floor(baseVolume * volumeMultiplier * (0.7 + Math.random() * 0.6))
+  const openInterest = Math.floor(baseOI * volumeMultiplier * (0.5 + Math.random() * 1.0))
+
+  return { volume: Math.max(50, volume), openInterest: Math.max(200, openInterest) }
+}
+
+// Generate full options chain with realistic values
+function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
   const strikes = generateStrikes(spotPrice)
   const chain = []
 
   for (const strike of strikes) {
     const moneyness = spotPrice / strike
-    // IV smile: higher IV for OTM options
-    const ivAdjustment = Math.abs(1 - moneyness) * 20
-    const iv = baseIV + ivAdjustment + (Math.random() - 0.5) * 5
+
+    // IV smile/skew: higher IV for OTM puts (put skew), slight smile for OTM calls
+    const putSkew = moneyness > 1 ? Math.pow(moneyness - 1, 2) * 40 : 0
+    const callSkew = moneyness < 1 ? Math.pow(1 - moneyness, 2) * 25 : 0
+    const atmBonus = Math.abs(1 - moneyness) < 0.05 ? -3 : 0  // ATM slightly lower IV
+    const termStructure = Math.sqrt(30 / expiration.daysToExpiry) * 5 // Higher IV for near-term
+
+    const iv = baseIV + putSkew + callSkew + atmBonus + termStructure + (Math.random() - 0.5) * 3
 
     const callPrice = calculateOptionPrice(spotPrice, strike, expiration.daysToExpiry, iv, 'CALL')
     const putPrice = calculateOptionPrice(spotPrice, strike, expiration.daysToExpiry, iv, 'PUT')
 
-    const callGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'CALL', callPrice)
-    const putGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'PUT', putPrice)
+    const callGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'CALL')
+    const putGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'PUT')
 
-    // Generate bid/ask spread (wider for OTM)
-    const spreadPercent = 0.02 + Math.abs(1 - moneyness) * 0.03
+    // Generate bid/ask spread (wider for OTM, narrower for liquid ATM)
+    const liquidityFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 8)
+    const spreadPercent = 0.015 + (1 - liquidityFactor) * 0.04
+
+    const callVolOI = generateVolumeOI(moneyness, true)
+    const putVolOI = generateVolumeOI(moneyness, false)
 
     chain.push({
       strike,
-      isATM: Math.abs(moneyness - 1) < 0.03,
+      isATM: Math.abs(moneyness - 1) < 0.02,
       isITM: {
         call: spotPrice > strike,
         put: spotPrice < strike,
@@ -154,16 +210,14 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 45) {
         bid: Math.round((callPrice * (1 - spreadPercent / 2)) * 100) / 100,
         ask: Math.round((callPrice * (1 + spreadPercent / 2)) * 100) / 100,
         last: callPrice,
-        volume: Math.floor(Math.random() * 5000) + 100,
-        openInterest: Math.floor(Math.random() * 20000) + 500,
+        ...callVolOI,
         ...callGreeks,
       },
       put: {
         bid: Math.round((putPrice * (1 - spreadPercent / 2)) * 100) / 100,
         ask: Math.round((putPrice * (1 + spreadPercent / 2)) * 100) / 100,
         last: putPrice,
-        volume: Math.floor(Math.random() * 5000) + 100,
-        openInterest: Math.floor(Math.random() * 20000) + 500,
+        ...putVolOI,
         ...putGreeks,
       },
     })

@@ -39,8 +39,8 @@ export const EXPIRATION_INTERVALS = {
 }
 
 // Strike price generation
-export const STRIKE_COUNT = 11 // Number of strikes to show (centered around ATM)
-export const STRIKE_STEP_PERCENT = 0.05 // 5% increments
+export const STRIKE_COUNT = 15 // Number of strikes to show (centered around ATM)
+export const STRIKE_STEP_PERCENT = 0.03 // 3% increments for tighter strikes
 
 // Trading fees
 export const TRADING_FEE_BPS = 5 // 0.05%
