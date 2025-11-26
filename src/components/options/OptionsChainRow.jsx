@@ -1,7 +1,7 @@
 import { useOptions } from '../../context/OptionsContext'
 
 function OptionsChainRow({ data }) {
-  const { selectedStrike, selectedType, selectStrike, selectType, spotPrice } = useOptions()
+  const { selectedStrike, selectedType, selectStrike, selectType } = useOptions()
 
   const isSelected = selectedStrike === data.strike
   const isCallSelected = isSelected && selectedType === 'CALL'
@@ -20,57 +20,51 @@ function OptionsChainRow({ data }) {
   return (
     <div
       className={`
-        grid grid-cols-[1fr_auto_1fr] gap-0 text-xs
-        border-b border-glass-border last:border-b-0
-        ${data.isATM ? 'atm-strike' : ''}
+        grid grid-cols-[1fr_60px_1fr] gap-0 text-[11px]
+        border-b border-glass-border/50 last:border-b-0
+        ${data.isATM ? 'bg-accent-purple/5' : ''}
       `}
     >
       {/* CALLS (Left Side) */}
       <div
         onClick={handleCallClick}
         className={`
-          grid grid-cols-5 gap-2 px-3 py-2.5 cursor-pointer
+          grid grid-cols-4 gap-1 px-2 py-1.5 cursor-pointer
           transition-all duration-150
-          ${data.isITM.call ? 'itm-call' : ''}
+          ${data.isITM.call ? 'bg-call/5' : ''}
           ${isCallSelected
-            ? 'bg-call-surface ring-1 ring-call/50'
+            ? 'bg-call/20 ring-1 ring-inset ring-call/40'
             : 'hover:bg-glass-hover'
           }
         `}
       >
-        <div className="text-text-tertiary text-right numeric">
-          {formatVolume(data.call.volume)}
+        <div className="text-text-tertiary text-right font-mono">
+          {data.iv.toFixed(0)}%
         </div>
-        <div className="text-text-tertiary text-right numeric">
-          {formatVolume(data.call.openInterest)}
-        </div>
-        <div className="text-call text-right numeric font-medium">
+        <div className="text-call text-right font-mono font-medium">
           {data.call.bid.toFixed(2)}
         </div>
-        <div className="text-call text-right numeric font-medium">
+        <div className="text-call text-right font-mono font-medium">
           {data.call.ask.toFixed(2)}
         </div>
-        <div className={`text-right numeric ${data.call.delta > 0 ? 'text-call' : 'text-put'}`}>
-          {data.call.delta > 0 ? '+' : ''}{data.call.delta.toFixed(2)}
+        <div className={`text-right font-mono ${data.call.delta > 0.5 ? 'text-call' : 'text-text-tertiary'}`}>
+          {data.call.delta.toFixed(2)}
         </div>
       </div>
 
       {/* STRIKE (Center) */}
       <div
         className={`
-          flex flex-col items-center justify-center px-4 py-2
-          bg-bg-secondary border-x border-glass-border min-w-[80px]
-          ${data.isATM ? 'bg-accent-purple/20' : ''}
+          flex items-center justify-center px-1 py-1.5
+          border-x border-glass-border
+          ${data.isATM ? 'bg-accent-purple/20' : 'bg-bg-secondary/50'}
         `}
       >
         <span className={`
-          font-semibold numeric
-          ${data.isATM ? 'text-accent-purple text-glow-purple' : 'text-text-primary'}
+          font-semibold font-mono text-xs
+          ${data.isATM ? 'text-accent-purple' : 'text-text-primary'}
         `}>
           {data.strike.toFixed(0)}¢
-        </span>
-        <span className="text-[10px] text-text-tertiary">
-          IV: {data.iv.toFixed(0)}%
         </span>
       </div>
 
@@ -78,39 +72,30 @@ function OptionsChainRow({ data }) {
       <div
         onClick={handlePutClick}
         className={`
-          grid grid-cols-5 gap-2 px-3 py-2.5 cursor-pointer
+          grid grid-cols-4 gap-1 px-2 py-1.5 cursor-pointer
           transition-all duration-150
-          ${data.isITM.put ? 'itm-put' : ''}
+          ${data.isITM.put ? 'bg-put/5' : ''}
           ${isPutSelected
-            ? 'bg-put-surface ring-1 ring-put/50'
+            ? 'bg-put/20 ring-1 ring-inset ring-put/40'
             : 'hover:bg-glass-hover'
           }
         `}
       >
-        <div className={`text-left numeric ${data.put.delta < 0 ? 'text-put' : 'text-call'}`}>
+        <div className={`text-left font-mono ${Math.abs(data.put.delta) > 0.5 ? 'text-put' : 'text-text-tertiary'}`}>
           {data.put.delta.toFixed(2)}
         </div>
-        <div className="text-put text-left numeric font-medium">
+        <div className="text-put text-left font-mono font-medium">
           {data.put.bid.toFixed(2)}
         </div>
-        <div className="text-put text-left numeric font-medium">
+        <div className="text-put text-left font-mono font-medium">
           {data.put.ask.toFixed(2)}
         </div>
-        <div className="text-text-tertiary text-left numeric">
-          {formatVolume(data.put.openInterest)}
-        </div>
-        <div className="text-text-tertiary text-left numeric">
-          {formatVolume(data.put.volume)}
+        <div className="text-text-tertiary text-left font-mono">
+          {data.iv.toFixed(0)}%
         </div>
       </div>
     </div>
   )
-}
-
-function formatVolume(num) {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
-  return num.toString()
 }
 
 export default OptionsChainRow

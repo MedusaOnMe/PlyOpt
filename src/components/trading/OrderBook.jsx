@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useMarket } from '../../context/MarketContext'
-import { formatCents, formatNumber, formatCompact } from '../../utils/formatters'
-import { Activity, TrendingUp, TrendingDown } from 'lucide-react'
+import { formatCents, formatNumber } from '../../utils/formatters'
+import { Activity } from 'lucide-react'
 
 export function OrderBook() {
   const { orderBook, selectedMarket, isLoading, getCurrentPrice } = useMarket()
@@ -15,8 +15,8 @@ export function OrderBook() {
     const spread = topAsk - topBid
 
     return {
-      bids: orderBook.bids.slice(0, 8),
-      asks: orderBook.asks.slice(0, 8).reverse(),
+      bids: orderBook.bids.slice(0, 6),
+      asks: orderBook.asks.slice(0, 6).reverse(),
       maxSize,
       spread,
     }
@@ -28,8 +28,8 @@ export function OrderBook() {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <Activity size={24} className="mx-auto mb-2 text-text-tertiary" />
-          <p className="text-sm text-text-secondary">No market selected</p>
+          <Activity size={20} className="mx-auto mb-2 text-text-tertiary" />
+          <p className="text-xs text-text-secondary">No market selected</p>
         </div>
       </div>
     )
@@ -38,19 +38,17 @@ export function OrderBook() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-glass-border">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-text-primary">Order Book</h3>
-          <div className="flex items-center gap-2">
-            <div className="status-live" />
-            <span className="text-xs text-text-secondary">Live</span>
-          </div>
+      <div className="px-3 py-2 border-b border-glass-border flex items-center justify-between shrink-0">
+        <h3 className="text-xs font-semibold text-text-primary">Order Book</h3>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
+          <span className="text-[10px] text-text-tertiary">Live</span>
         </div>
       </div>
 
       {/* Column headers */}
-      <div className="px-4 py-2 border-b border-glass-border bg-bg-secondary/30">
-        <div className="flex justify-between text-[10px] text-text-tertiary uppercase tracking-wider">
+      <div className="px-3 py-1.5 border-b border-glass-border bg-bg-secondary/30 shrink-0">
+        <div className="flex justify-between text-[9px] text-text-tertiary uppercase tracking-wider">
           <span>Price</span>
           <span>Size</span>
           <span>Total</span>
@@ -59,82 +57,38 @@ export function OrderBook() {
 
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent-purple animate-pulse-soft" />
-            <span className="text-sm text-text-secondary">Loading...</span>
-          </div>
+          <span className="text-xs text-text-tertiary">Loading...</span>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Asks (Puts - red) */}
-          <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {/* Asks */}
+          <div className="flex-1 flex flex-col justify-end overflow-hidden">
             {asks.map((order, i) => (
-              <OrderRow
-                key={`ask-${i}`}
-                price={order.price}
-                size={order.size}
-                maxSize={maxSize}
-                side="ask"
-              />
+              <OrderRow key={`ask-${i}`} price={order.price} size={order.size} maxSize={maxSize} side="ask" />
             ))}
           </div>
 
           {/* Spread / Current price */}
-          <div className="px-4 py-3 bg-bg-tertiary/50 border-y border-glass-border">
+          <div className="px-3 py-2 bg-bg-tertiary/50 border-y border-glass-border shrink-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-accent-purple numeric text-glow-purple">
-                  {formatCents(currentPrice)}
-                </span>
-                <span className="badge badge-neutral">
-                  Spot
-                </span>
-              </div>
+              <span className="text-base font-bold text-accent-purple font-mono">
+                {formatCents(currentPrice)}
+              </span>
               <div className="text-right">
-                <span className="text-xs text-text-tertiary">Spread</span>
-                <p className="text-sm text-text-secondary numeric">{formatCents(spread)}</p>
+                <span className="text-[9px] text-text-tertiary block">Spread</span>
+                <span className="text-[10px] text-text-secondary font-mono">{formatCents(spread)}</span>
               </div>
             </div>
           </div>
 
-          {/* Bids (Calls - cyan) */}
-          <div className="flex-1 overflow-hidden">
+          {/* Bids */}
+          <div className="flex-1 flex flex-col overflow-hidden">
             {bids.map((order, i) => (
-              <OrderRow
-                key={`bid-${i}`}
-                price={order.price}
-                size={order.size}
-                maxSize={maxSize}
-                side="bid"
-              />
+              <OrderRow key={`bid-${i}`} price={order.price} size={order.size} maxSize={maxSize} side="bid" />
             ))}
           </div>
         </div>
       )}
-
-      {/* Footer stats */}
-      <div className="px-4 py-3 border-t border-glass-border">
-        <div className="grid grid-cols-2 gap-4 text-xs">
-          <div>
-            <div className="flex items-center gap-1.5 text-text-tertiary mb-1">
-              <TrendingUp size={12} className="text-call" />
-              <span>Bid Volume</span>
-            </div>
-            <p className="text-call font-medium numeric">
-              {formatCompact(bids.reduce((acc, b) => acc + b.size * b.price, 0))}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="flex items-center gap-1.5 text-text-tertiary mb-1 justify-end">
-              <TrendingDown size={12} className="text-put" />
-              <span>Ask Volume</span>
-            </div>
-            <p className="text-put font-medium numeric">
-              {formatCompact(asks.reduce((acc, a) => acc + a.size * (1 - a.price), 0))}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
@@ -144,20 +98,20 @@ function OrderRow({ price, size, maxSize, side }) {
   const total = price * size
 
   return (
-    <div className="relative px-4 py-1.5 hover:bg-glass-hover cursor-pointer transition-colors">
+    <div className="relative px-3 py-1 hover:bg-glass-hover cursor-pointer transition-colors">
       {/* Depth bar */}
       <div
-        className={`absolute inset-y-0 ${side === 'bid' ? 'left-0 depth-bar-call' : 'right-0 depth-bar-put'}`}
+        className={`absolute inset-y-0 ${side === 'bid' ? 'left-0 bg-call/10' : 'right-0 bg-put/10'}`}
         style={{ width: `${depthPercent}%` }}
       />
 
       {/* Content */}
-      <div className="relative flex justify-between text-xs">
-        <span className={`font-medium numeric ${side === 'bid' ? 'text-call' : 'text-put'}`}>
+      <div className="relative flex justify-between text-[11px]">
+        <span className={`font-medium font-mono ${side === 'bid' ? 'text-call' : 'text-put'}`}>
           {formatCents(price)}
         </span>
-        <span className="text-text-secondary numeric">{formatNumber(size, 0)}</span>
-        <span className="text-text-tertiary numeric">{formatNumber(total, 0)}</span>
+        <span className="text-text-secondary font-mono">{formatNumber(size, 0)}</span>
+        <span className="text-text-tertiary font-mono">{formatNumber(total, 0)}</span>
       </div>
     </div>
   )

@@ -222,24 +222,19 @@ export function TradingChart() {
       </div>
 
       {/* Bottom stats */}
-      <div className="px-4 py-3 border-t border-glass-border flex items-center justify-between text-xs">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-text-tertiary">24h High</span>
-            <span className="text-call font-medium numeric">
-              {formatCents(priceHistory.length > 0 ? Math.max(...priceHistory.map(p => p.value)) : currentPrice)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-text-tertiary">24h Low</span>
-            <span className="text-put font-medium numeric">
-              {formatCents(priceHistory.length > 0 ? Math.min(...priceHistory.map(p => p.value)) : currentPrice)}
-            </span>
-          </div>
+      <div className="px-4 py-2 border-t border-glass-border flex items-center gap-6 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-text-tertiary">High</span>
+          <span className="text-call font-medium font-mono">
+            {formatCents(priceHistory.length > 0 ? Math.max(...priceHistory.map(p => p.value)) : currentPrice)}
+          </span>
         </div>
-        <span className="text-text-tertiary">
-          {priceHistory.length} data points
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-text-tertiary">Low</span>
+          <span className="text-put font-medium font-mono">
+            {formatCents(priceHistory.length > 0 ? Math.min(...priceHistory.map(p => p.value)) : currentPrice)}
+          </span>
+        </div>
       </div>
     </div>
   )
