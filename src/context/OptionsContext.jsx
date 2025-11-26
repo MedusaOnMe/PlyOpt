@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useMarket } from './MarketContext'
 import { STRIKE_COUNT, STRIKE_STEP_PERCENT } from '../utils/constants'
 
@@ -152,21 +152,41 @@ function generateStrikes(spotPrice, count = STRIKE_COUNT) {
   return strikes
 }
 
-// Generate realistic volume/OI based on moneyness (higher near ATM)
-function generateVolumeOI(moneyness, isCall, baseVolume = 5000, baseOI = 25000) {
+// Seeded random number generator for deterministic values
+function seededRandom(seed) {
+  const x = Math.sin(seed * 9999) * 10000
+  return x - Math.floor(x)
+}
+
+// Generate realistic volume/OI based on moneyness - DETERMINISTIC
+function generateVolumeOI(strike, daysToExpiry, moneyness, isCall) {
+  // Create seed from strike and expiry for consistent values
+  const seed = strike * 1000 + daysToExpiry + (isCall ? 0 : 500)
+
+  // Base values scale with time to expiry (more OI for popular near-term)
+  const timeMultiplier = daysToExpiry <= 7 ? 2.5 : daysToExpiry <= 14 ? 1.8 : daysToExpiry <= 30 ? 1.2 : 0.7
+
   // ATM options have highest activity
-  const atmFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 15)
+  const atmFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 12)
 
-  // Slight bias: calls more active above spot, puts below
+  // Slight bias: calls more active for OTM calls, puts for OTM puts
   const directionalBias = isCall
-    ? (moneyness > 1 ? 0.8 : 1.2)
-    : (moneyness < 1 ? 0.8 : 1.2)
+    ? (moneyness < 1 ? 1.3 : 0.9)  // OTM calls more popular
+    : (moneyness > 1 ? 1.3 : 0.9)  // OTM puts more popular
 
-  const volumeMultiplier = atmFactor * directionalBias
-  const volume = Math.floor(baseVolume * volumeMultiplier * (0.7 + Math.random() * 0.6))
-  const openInterest = Math.floor(baseOI * volumeMultiplier * (0.5 + Math.random() * 1.0))
+  // Calculate OI first (accumulates over time, larger base)
+  const oiMultiplier = atmFactor * directionalBias * timeMultiplier
+  const oiVariance = 0.7 + seededRandom(seed) * 0.6 // 0.7 to 1.3
+  const openInterest = Math.floor(15000 * oiMultiplier * oiVariance)
 
-  return { volume: Math.max(50, volume), openInterest: Math.max(200, openInterest) }
+  // Volume is typically 5-20% of OI for liquid options
+  const volumeRatio = 0.05 + seededRandom(seed + 1) * 0.15 // 5% to 20%
+  const volume = Math.floor(openInterest * volumeRatio * (0.8 + seededRandom(seed + 2) * 0.4))
+
+  return {
+    volume: Math.max(10, volume),
+    openInterest: Math.max(100, openInterest)
+  }
 }
 
 // Generate full options chain with realistic values
@@ -177,13 +197,19 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
   for (const strike of strikes) {
     const moneyness = spotPrice / strike
 
-    // IV smile/skew: higher IV for OTM puts (put skew), slight smile for OTM calls
-    const putSkew = moneyness > 1 ? Math.pow(moneyness - 1, 2) * 40 : 0
-    const callSkew = moneyness < 1 ? Math.pow(1 - moneyness, 2) * 25 : 0
-    const atmBonus = Math.abs(1 - moneyness) < 0.05 ? -3 : 0  // ATM slightly lower IV
-    const termStructure = Math.sqrt(30 / expiration.daysToExpiry) * 5 // Higher IV for near-term
+    // IV smile/skew - deterministic based on strike
+    // Put skew: OTM puts have higher IV (crash protection)
+    // Call skew: slight smile for far OTM calls
+    const putSkew = moneyness > 1 ? Math.pow(moneyness - 1, 2) * 45 : 0
+    const callSkew = moneyness < 1 ? Math.pow(1 - moneyness, 2) * 30 : 0
+    const atmBonus = Math.abs(1 - moneyness) < 0.03 ? -2 : 0  // ATM slightly lower IV
+    const termStructure = Math.sqrt(30 / Math.max(expiration.daysToExpiry, 1)) * 8 // Higher IV for near-term
 
-    const iv = baseIV + putSkew + callSkew + atmBonus + termStructure + (Math.random() - 0.5) * 3
+    // Use seeded random for IV variance (deterministic)
+    const ivSeed = strike * 100 + expiration.daysToExpiry
+    const ivVariance = (seededRandom(ivSeed) - 0.5) * 4 // -2 to +2
+
+    const iv = Math.max(20, baseIV + putSkew + callSkew + atmBonus + termStructure + ivVariance)
 
     const callPrice = calculateOptionPrice(spotPrice, strike, expiration.daysToExpiry, iv, 'CALL')
     const putPrice = calculateOptionPrice(spotPrice, strike, expiration.daysToExpiry, iv, 'PUT')
@@ -191,12 +217,14 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
     const callGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'CALL')
     const putGreeks = calculateGreeks(spotPrice, strike, expiration.daysToExpiry, iv, 'PUT')
 
-    // Generate bid/ask spread (wider for OTM, narrower for liquid ATM)
-    const liquidityFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 8)
-    const spreadPercent = 0.015 + (1 - liquidityFactor) * 0.04
+    // Bid/ask spread - tighter for liquid ATM, wider for illiquid OTM
+    const liquidityFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 10)
+    const baseSpread = expiration.daysToExpiry <= 7 ? 0.01 : 0.015 // Tighter spreads for near-term
+    const spreadPercent = baseSpread + (1 - liquidityFactor) * 0.05
 
-    const callVolOI = generateVolumeOI(moneyness, true)
-    const putVolOI = generateVolumeOI(moneyness, false)
+    // Generate deterministic volume and OI
+    const callVolOI = generateVolumeOI(strike, expiration.daysToExpiry, moneyness, true)
+    const putVolOI = generateVolumeOI(strike, expiration.daysToExpiry, moneyness, false)
 
     chain.push({
       strike,
@@ -207,14 +235,14 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
       },
       iv: Math.round(iv * 10) / 10,
       call: {
-        bid: Math.round((callPrice * (1 - spreadPercent / 2)) * 100) / 100,
+        bid: Math.max(0.01, Math.round((callPrice * (1 - spreadPercent / 2)) * 100) / 100),
         ask: Math.round((callPrice * (1 + spreadPercent / 2)) * 100) / 100,
         last: callPrice,
         ...callVolOI,
         ...callGreeks,
       },
       put: {
-        bid: Math.round((putPrice * (1 - spreadPercent / 2)) * 100) / 100,
+        bid: Math.max(0.01, Math.round((putPrice * (1 - spreadPercent / 2)) * 100) / 100),
         ask: Math.round((putPrice * (1 + spreadPercent / 2)) * 100) / 100,
         last: putPrice,
         ...putVolOI,
@@ -234,6 +262,7 @@ export function OptionsProvider({ children }) {
   const [selectedType, setSelectedType] = useState('CALL')
   const [positionDirection, setPositionDirection] = useState('BUY') // BUY or SELL
   const [quantity, setQuantity] = useState(1)
+  const hasAutoSelected = useRef(false)
 
   // Generate expirations
   const expirations = useMemo(() => generateExpirations(), [])
@@ -257,6 +286,24 @@ export function OptionsProvider({ children }) {
     if (!selectedExpiration || !spotPrice) return []
     return generateOptionsChain(spotPrice, selectedExpiration)
   }, [spotPrice, selectedExpiration])
+
+  // Auto-select ATM strike on load
+  useEffect(() => {
+    if (optionsChain.length > 0 && !hasAutoSelected.current) {
+      hasAutoSelected.current = true
+      // Find ATM option or closest to spot
+      const atmOption = optionsChain.find(row => row.isATM)
+      if (atmOption) {
+        setSelectedStrike(atmOption.strike)
+      } else {
+        // Find closest strike to spot price
+        const closest = optionsChain.reduce((prev, curr) =>
+          Math.abs(curr.strike - spotPrice) < Math.abs(prev.strike - spotPrice) ? curr : prev
+        )
+        setSelectedStrike(closest.strike)
+      }
+    }
+  }, [optionsChain, spotPrice])
 
   // Get selected option details
   const selectedOption = useMemo(() => {
