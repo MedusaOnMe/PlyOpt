@@ -1,41 +1,37 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, TrendingUp, TrendingDown, Shield, Target, BookOpen, Zap, Terminal, ChevronRight, DollarSign, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, Shield, Target, BookOpen, Zap, ChevronRight, DollarSign, AlertTriangle, ArrowUpCircle, ArrowDownCircle, PenTool } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { id: 'overview', label: 'OVERVIEW', icon: Terminal },
-  { id: 'quickstart', label: 'QUICK_START', icon: Zap },
-  { id: 'trading', label: 'TRADING', icon: TrendingUp },
-  { id: 'leverage', label: 'LEVERAGE', icon: Target },
-  { id: 'risk', label: 'RISK', icon: Shield },
+  { id: 'overview', label: 'Overview', icon: BookOpen },
+  { id: 'quickstart', label: 'Quick Start', icon: Zap },
+  { id: 'options', label: 'Options Basics', icon: Target },
+  { id: 'trading', label: 'Trading', icon: TrendingUp },
+  { id: 'writing', label: 'Writing Options', icon: PenTool },
+  { id: 'risk', label: 'Risk', icon: Shield },
 ]
 
 export function Docs() {
   const [activeSection, setActiveSection] = useState('overview')
 
   return (
-    <div className="min-h-screen bg-term-black">
-      {/* CRT Scanline overlay */}
-      <div className="crt-overlay" />
-
+    <div className="min-h-screen bg-bg-primary">
       {/* Header */}
-      <header className="bg-term-dark border-b border-term-border sticky top-0 z-40">
+      <header className="glass-solid border-b border-glass-border sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-2 text-term-green">
-                <Terminal className="w-5 h-5" />
-                <span className="text-lg font-bold term-glow">
-                  <span className="text-term-text-dim">[</span>
-                  POLYNOMIAL
-                  <span className="text-term-text-dim">]</span>
-                </span>
+            <div className="flex items-center gap-4">
+              <Link to="/" className="text-lg font-bold text-text-primary">
+                PolyOptions
               </Link>
-              <span className="text-term-text-dim text-xs hidden sm:inline">// DOCUMENTATION</span>
+              <span className="text-text-tertiary text-sm hidden sm:inline">/ Documentation</span>
             </div>
-            <Link to="/" className="flex items-center gap-2 px-3 py-1.5 border border-term-border text-term-text-dim hover:text-term-green hover:border-term-green transition-colors text-xs">
-              <ArrowLeft className="w-3 h-3" />
-              TRADE
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-tertiary hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-all text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Trading
             </Link>
           </div>
         </div>
@@ -43,10 +39,10 @@ export function Docs() {
 
       <div className="flex">
         {/* Sidebar Navigation */}
-        <aside className="hidden md:block w-56 border-r border-term-border min-h-[calc(100vh-49px)] bg-term-dark">
-          <nav className="p-3">
-            <div className="text-[10px] text-term-text-dim uppercase tracking-wider mb-3 px-2">
-              Navigation
+        <aside className="hidden md:block w-56 border-r border-glass-border min-h-[calc(100vh-57px)] bg-bg-secondary">
+          <nav className="p-4">
+            <div className="text-xs text-text-tertiary uppercase tracking-wider mb-3 px-2">
+              Documentation
             </div>
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon
@@ -54,114 +50,105 @@ export function Docs() {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-2 px-2 py-2 text-xs transition-colors mb-1 ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all mb-1 ${
                     activeSection === item.id
-                      ? 'text-term-green bg-term-green/10 border-l-2 border-term-green'
-                      : 'text-term-text-dim hover:text-term-text border-l-2 border-transparent'
+                      ? 'text-accent-purple bg-accent-purple/10'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-glass-hover'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4" />
                   {item.label}
                 </button>
               )
             })}
           </nav>
 
-          {/* Quick Stats */}
-          <div className="p-3 border-t border-term-border mt-4">
-            <div className="text-[10px] text-term-text-dim uppercase tracking-wider mb-3 px-2">
-              Platform Stats
+          {/* Quick Info */}
+          <div className="p-4 border-t border-glass-border">
+            <div className="text-xs text-text-tertiary uppercase tracking-wider mb-3 px-2">
+              Platform Info
             </div>
             <div className="space-y-2 px-2">
-              <div className="flex justify-between text-[10px]">
-                <span className="text-term-text-dim">MAX_LEVERAGE</span>
-                <span className="text-term-green">25x</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-tertiary">Network</span>
+                <span className="text-accent-purple">Polygon</span>
               </div>
-              <div className="flex justify-between text-[10px]">
-                <span className="text-term-text-dim">TRADING_FEE</span>
-                <span className="text-term-amber">0.1%</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-tertiary">Settlement</span>
+                <span className="text-text-primary">USDC</span>
               </div>
-              <div className="flex justify-between text-[10px]">
-                <span className="text-term-text-dim">NETWORK</span>
-                <span className="text-term-cyan">POLYGON</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-text-tertiary">Pricing</span>
+                <span className="text-text-primary">Black-Scholes</span>
               </div>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="flex-1 p-6 lg:p-8 overflow-auto">
           <div className="max-w-3xl">
 
             {/* Overview Section */}
             {activeSection === 'overview' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-term-green term-glow mb-2">
-                    &gt; SYSTEM_OVERVIEW_
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    What is PolyOptions?
                   </h1>
-                  <p className="text-term-text-dim text-sm">
-                    Polynomial is a leveraged trading terminal for Polymarket prediction markets.
+                  <p className="text-text-secondary">
+                    PolyOptions is a derivatives layer for Polymarket prediction markets.
+                    Trade calls and puts on any market outcome with proper options pricing,
+                    Greeks, and risk management.
                   </p>
                 </div>
 
                 {/* Feature Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-term-dark border border-term-border p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-4 h-4 text-term-green" />
-                      <span className="text-term-green text-sm">LEVERAGE</span>
+                      <ArrowUpCircle className="w-5 h-5 text-call" />
+                      <span className="text-text-primary font-medium">Call Options</span>
                     </div>
-                    <p className="text-term-text-dim text-xs">
-                      Trade with up to 25x leverage on any prediction market
+                    <p className="text-text-tertiary text-sm">
+                      Profit when the market probability increases above your strike price
                     </p>
                   </div>
-                  <div className="bg-term-dark border border-term-border p-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-4 h-4 text-term-cyan" />
-                      <span className="text-term-cyan text-sm">LONG/SHORT</span>
+                      <ArrowDownCircle className="w-5 h-5 text-put" />
+                      <span className="text-text-primary font-medium">Put Options</span>
                     </div>
-                    <p className="text-term-text-dim text-xs">
-                      Go long (YES) or short (NO) on any market outcome
+                    <p className="text-text-tertiary text-sm">
+                      Profit when the market probability decreases below your strike price
                     </p>
                   </div>
-                  <div className="bg-term-dark border border-term-border p-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="w-4 h-4 text-term-amber" />
-                      <span className="text-term-amber text-sm">ORDER_TYPES</span>
+                      <Target className="w-5 h-5 text-accent-purple" />
+                      <span className="text-text-primary font-medium">Real Greeks</span>
                     </div>
-                    <p className="text-term-text-dim text-xs">
-                      Market and limit orders with real-time execution
+                    <p className="text-text-tertiary text-sm">
+                      Delta, Gamma, Theta, Vega - all calculated using Black-Scholes
                     </p>
                   </div>
-                  <div className="bg-term-dark border border-term-border p-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-4 h-4 text-term-red" />
-                      <span className="text-term-red text-sm">RISK_MGMT</span>
+                      <PenTool className="w-5 h-5 text-accent-cyan" />
+                      <span className="text-text-primary font-medium">Write Options</span>
                     </div>
-                    <p className="text-term-text-dim text-xs">
-                      Automatic liquidation engine protects the protocol
+                    <p className="text-text-tertiary text-sm">
+                      Earn premium by writing options and providing liquidity
                     </p>
                   </div>
                 </div>
 
-                {/* Terminal Preview */}
-                <div className="bg-term-dark border border-term-border">
-                  <div className="px-3 py-2 border-b border-term-border flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-term-red" />
-                    <div className="w-2 h-2 rounded-full bg-term-amber" />
-                    <div className="w-2 h-2 rounded-full bg-term-green" />
-                    <span className="text-[10px] text-term-text-dim ml-2">polynomial_terminal</span>
-                  </div>
-                  <div className="p-4 font-mono text-xs space-y-1">
-                    <div className="text-term-text-dim">&gt; polynomial --help</div>
-                    <div className="text-term-text">POLYNOMIAL v1.0 - Leveraged Prediction Markets</div>
-                    <div className="text-term-text-dim mt-2">Available commands:</div>
-                    <div className="text-term-green pl-4">trade   - Open leveraged positions</div>
-                    <div className="text-term-cyan pl-4">markets - Browse prediction markets</div>
-                    <div className="text-term-amber pl-4">account - Manage your account</div>
-                    <div className="text-term-text-dim mt-2">&gt; <span className="cursor-blink"></span></div>
-                  </div>
+                <div className="p-4 rounded-xl bg-accent-purple/10 border border-accent-purple/30">
+                  <p className="text-text-primary text-sm">
+                    <span className="font-semibold text-accent-purple">Why options?</span> Options let you
+                    express more nuanced views than simple yes/no bets. Define your risk, leverage your
+                    conviction, or earn yield by writing options.
+                  </p>
                 </div>
               </div>
             )}
@@ -170,38 +157,117 @@ export function Docs() {
             {activeSection === 'quickstart' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-term-green term-glow mb-2">
-                    &gt; QUICK_START_
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    Quick Start
                   </h1>
-                  <p className="text-term-text-dim text-sm">
-                    Get trading in under 2 minutes.
+                  <p className="text-text-secondary">
+                    Get trading options in under 2 minutes.
                   </p>
                 </div>
 
                 {/* Steps */}
                 <div className="space-y-4">
                   {[
-                    { step: 1, title: 'CREATE_ACCOUNT', desc: 'Sign up with email and password. A wallet is automatically generated for you.', color: 'term-green' },
-                    { step: 2, title: 'DEPOSIT_FUNDS', desc: 'Send USDC to your deposit address on Polygon network. Minimum $10.', color: 'term-cyan' },
-                    { step: 3, title: 'SELECT_MARKET', desc: 'Browse live prediction markets from the sidebar. Click to view charts and order book.', color: 'term-amber' },
-                    { step: 4, title: 'OPEN_POSITION', desc: 'Choose YES or NO, set size and leverage (1-25x), then execute.', color: 'term-green' },
+                    { step: 1, title: 'Create Account', desc: 'Sign up with email and password. A Polygon wallet is automatically created for you.', color: 'call' },
+                    { step: 2, title: 'Deposit USDC', desc: 'Send USDC to your deposit address on Polygon network. Minimum $10.', color: 'accent-purple' },
+                    { step: 3, title: 'Select Market', desc: 'Choose a prediction market from the sidebar. View the options chain for available strikes.', color: 'accent-cyan' },
+                    { step: 4, title: 'Trade Options', desc: 'Select a strike, choose call or put, pick buy or sell, and execute your trade.', color: 'call' },
                   ].map((item) => (
                     <div key={item.step} className="flex gap-4 items-start">
-                      <div className={`w-8 h-8 bg-${item.color}/20 text-${item.color} flex items-center justify-center font-bold text-sm shrink-0 border border-${item.color}/30`}>
+                      <div className={`w-8 h-8 rounded-lg bg-${item.color}/20 text-${item.color} flex items-center justify-center font-bold text-sm shrink-0`}>
                         {item.step}
                       </div>
-                      <div className="flex-1 bg-term-dark border border-term-border p-3">
-                        <div className={`text-${item.color} text-sm mb-1`}>{item.title}</div>
-                        <p className="text-term-text-dim text-xs">{item.desc}</p>
+                      <div className="flex-1 p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                        <div className="text-text-primary font-medium mb-1">{item.title}</div>
+                        <p className="text-text-tertiary text-sm">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-term-green/10 border border-term-green/30 p-4">
-                  <p className="text-term-green text-xs">
-                    <span className="font-bold">TIP:</span> Start with low leverage (1-5x) while learning. Higher leverage = higher risk.
+                <div className="p-4 rounded-xl bg-call/10 border border-call/30">
+                  <p className="text-call text-sm">
+                    <span className="font-semibold">Tip:</span> Start by buying options to limit your risk.
+                    Writing options requires margin and has unlimited loss potential.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* Options Basics Section */}
+            {activeSection === 'options' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    Options Basics
+                  </h1>
+                  <p className="text-text-secondary">
+                    Understanding call and put options on prediction markets.
+                  </p>
+                </div>
+
+                {/* Call vs Put */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-call/30">
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingUp className="w-5 h-5 text-call" />
+                      <span className="text-call font-bold">CALL Option</span>
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <p className="text-text-secondary">Right to buy at the strike price</p>
+                      <div className="p-3 rounded-lg bg-bg-tertiary">
+                        <div className="text-text-tertiary text-xs mb-1">Example:</div>
+                        <div className="text-text-primary">Strike: 50¢</div>
+                        <div className="text-text-primary">Market moves: 50¢ → 70¢</div>
+                        <div className="text-call font-medium">Profit: 20¢ per contract</div>
+                      </div>
+                      <p className="text-text-tertiary text-xs">
+                        Buy calls when you think probability will increase
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-put/30">
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingDown className="w-5 h-5 text-put" />
+                      <span className="text-put font-bold">PUT Option</span>
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <p className="text-text-secondary">Right to sell at the strike price</p>
+                      <div className="p-3 rounded-lg bg-bg-tertiary">
+                        <div className="text-text-tertiary text-xs mb-1">Example:</div>
+                        <div className="text-text-primary">Strike: 50¢</div>
+                        <div className="text-text-primary">Market moves: 50¢ → 30¢</div>
+                        <div className="text-call font-medium">Profit: 20¢ per contract</div>
+                      </div>
+                      <p className="text-text-tertiary text-xs">
+                        Buy puts when you think probability will decrease
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Greeks */}
+                <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                  <div className="text-text-primary font-medium mb-3">The Greeks</div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <div className="text-accent-purple font-mono text-lg">Δ Delta</div>
+                      <p className="text-text-tertiary text-xs">Price sensitivity to underlying</p>
+                    </div>
+                    <div>
+                      <div className="text-accent-cyan font-mono text-lg">Γ Gamma</div>
+                      <p className="text-text-tertiary text-xs">Rate of delta change</p>
+                    </div>
+                    <div>
+                      <div className="text-put font-mono text-lg">Θ Theta</div>
+                      <p className="text-text-tertiary text-xs">Time decay per day</p>
+                    </div>
+                    <div>
+                      <div className="text-call font-mono text-lg">ν Vega</div>
+                      <p className="text-text-tertiary text-xs">Sensitivity to volatility</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -210,137 +276,144 @@ export function Docs() {
             {activeSection === 'trading' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-term-green term-glow mb-2">
-                    &gt; TRADING_MECHANICS_
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    Trading Options
                   </h1>
-                  <p className="text-term-text-dim text-sm">
-                    How perpetual contracts work on prediction markets.
+                  <p className="text-text-secondary">
+                    How to buy and sell options on PolyOptions.
                   </p>
                 </div>
 
-                {/* Long vs Short */}
+                {/* Buy vs Sell */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="bg-term-dark border border-term-green/50 p-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className="w-5 h-5 text-term-green" />
-                      <span className="text-term-green font-bold">LONG (YES)</span>
+                      <ArrowUpCircle className="w-5 h-5 text-call" />
+                      <span className="text-call font-bold">BUY (Long)</span>
                     </div>
-                    <div className="space-y-2 text-xs">
-                      <p className="text-term-text-dim">Profit when probability <span className="text-term-green">increases</span></p>
-                      <div className="bg-term-black p-2 font-mono">
-                        <div className="text-term-text-dim">Example:</div>
-                        <div className="text-term-text">Entry: 40% | Exit: 60%</div>
-                        <div className="text-term-text">Leverage: 10x</div>
-                        <div className="text-term-green">Profit: +50%</div>
-                      </div>
-                    </div>
+                    <ul className="space-y-2 text-sm text-text-secondary">
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-call shrink-0 mt-0.5" />
+                        Pay premium upfront
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-call shrink-0 mt-0.5" />
+                        Maximum loss = premium paid
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-call shrink-0 mt-0.5" />
+                        Unlimited profit potential
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-call shrink-0 mt-0.5" />
+                        No margin required
+                      </li>
+                    </ul>
                   </div>
 
-                  <div className="bg-term-dark border border-term-red/50 p-4">
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
                     <div className="flex items-center gap-2 mb-3">
-                      <TrendingDown className="w-5 h-5 text-term-red" />
-                      <span className="text-term-red font-bold">SHORT (NO)</span>
+                      <ArrowDownCircle className="w-5 h-5 text-put" />
+                      <span className="text-put font-bold">SELL (Write)</span>
                     </div>
-                    <div className="space-y-2 text-xs">
-                      <p className="text-term-text-dim">Profit when probability <span className="text-term-red">decreases</span></p>
-                      <div className="bg-term-black p-2 font-mono">
-                        <div className="text-term-text-dim">Example:</div>
-                        <div className="text-term-text">Entry: 60% | Exit: 40%</div>
-                        <div className="text-term-text">Leverage: 10x</div>
-                        <div className="text-term-green">Profit: +33%</div>
-                      </div>
-                    </div>
+                    <ul className="space-y-2 text-sm text-text-secondary">
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                        Receive premium upfront
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                        Maximum profit = premium received
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                        Unlimited loss potential
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                        Margin required
+                      </li>
+                    </ul>
                   </div>
                 </div>
 
-                {/* Order Types */}
-                <div className="bg-term-dark border border-term-border p-4">
-                  <div className="text-term-amber text-sm mb-3">ORDER_TYPES</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-term-text text-xs mb-1">MARKET</div>
-                      <p className="text-term-text-dim text-[10px]">Execute immediately at best available price</p>
+                {/* Strike Selection */}
+                <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                  <div className="text-text-primary font-medium mb-3">Choosing a Strike</div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 rounded bg-accent-purple/20 text-accent-purple text-xs font-medium">ATM</span>
+                      <span className="text-text-secondary">At-the-money: Strike ≈ current price. Highest gamma.</span>
                     </div>
-                    <div>
-                      <div className="text-term-text text-xs mb-1">LIMIT</div>
-                      <p className="text-term-text-dim text-[10px]">Execute only when price reaches your target</p>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 rounded bg-call/20 text-call text-xs font-medium">ITM</span>
+                      <span className="text-text-secondary">In-the-money: Higher delta, more expensive, lower risk.</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 rounded bg-put/20 text-put text-xs font-medium">OTM</span>
+                      <span className="text-text-secondary">Out-of-the-money: Lower delta, cheaper, higher risk.</span>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Leverage Section */}
-            {activeSection === 'leverage' && (
+            {/* Writing Options Section */}
+            {activeSection === 'writing' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-term-green term-glow mb-2">
-                    &gt; LEVERAGE_SYSTEM_
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    Writing Options
                   </h1>
-                  <p className="text-term-text-dim text-sm">
-                    Understanding leverage and liquidation mechanics.
+                  <p className="text-text-secondary">
+                    Earn premium by providing liquidity as an options writer.
                   </p>
                 </div>
 
-                {/* Leverage Options */}
-                <div className="bg-term-dark border border-term-border p-4">
-                  <div className="text-term-amber text-sm mb-3">AVAILABLE_LEVERAGE</div>
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 5, 10, 15, 20, 25].map(l => (
-                      <div key={l} className={`px-3 py-2 border text-xs font-mono ${
-                        l <= 5 ? 'border-term-green/50 text-term-green' :
-                        l <= 15 ? 'border-term-amber/50 text-term-amber' :
-                        'border-term-red/50 text-term-red'
-                      }`}>
-                        {l}x
-                      </div>
-                    ))}
+                <div className="p-4 rounded-xl bg-accent-purple/10 border border-accent-purple/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <PenTool className="w-5 h-5 text-accent-purple" />
+                    <span className="text-accent-purple font-medium">Be the First Writer</span>
                   </div>
-                  <div className="flex gap-4 mt-3 text-[10px]">
-                    <span className="text-term-green">1-5x LOW</span>
-                    <span className="text-term-amber">10-15x MEDIUM</span>
-                    <span className="text-term-red">20-25x HIGH</span>
-                  </div>
-                </div>
-
-                {/* Liquidation Table */}
-                <div className="bg-term-dark border border-term-border">
-                  <div className="px-4 py-2 border-b border-term-border">
-                    <span className="text-term-red text-sm">LIQUIDATION_THRESHOLDS</span>
-                  </div>
-                  <div className="p-4">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-term-text-dim text-left">
-                          <th className="pb-2">LEVERAGE</th>
-                          <th className="pb-2">MARGIN</th>
-                          <th className="pb-2">LIQ_MOVE</th>
-                        </tr>
-                      </thead>
-                      <tbody className="font-mono">
-                        {[
-                          { lev: '5x', margin: '20%', move: '20%' },
-                          { lev: '10x', margin: '10%', move: '10%' },
-                          { lev: '15x', margin: '6.7%', move: '6.7%' },
-                          { lev: '20x', margin: '5%', move: '5%' },
-                          { lev: '25x', margin: '4%', move: '4%' },
-                        ].map((row) => (
-                          <tr key={row.lev} className="border-t border-term-border">
-                            <td className="py-2 text-term-cyan">{row.lev}</td>
-                            <td className="py-2 text-term-text">{row.margin}</td>
-                            <td className="py-2 text-term-red">{row.move}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className="bg-term-amber/10 border border-term-amber/30 p-4 flex gap-3">
-                  <AlertTriangle className="w-5 h-5 text-term-amber shrink-0" />
-                  <p className="text-term-amber text-xs">
-                    At 25x leverage, a 4% adverse price move will liquidate your entire position. Use appropriate position sizing.
+                  <p className="text-text-secondary text-sm">
+                    Many options on new markets have no liquidity yet. By writing options, you become the
+                    market maker and set the price. Look for "WRITE" badges on the options chain.
                   </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                  <div className="text-text-primary font-medium mb-3">How Writing Works</div>
+                  <ol className="space-y-3 text-sm text-text-secondary">
+                    <li className="flex gap-3">
+                      <span className="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                      <span>Select an option with no liquidity (marked "WRITE")</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                      <span>Choose SELL to write the option</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                      <span>Post margin (collateral) to cover potential losses</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center text-xs font-bold shrink-0">4</span>
+                      <span>Receive premium immediately when someone buys your option</span>
+                    </li>
+                  </ol>
+                </div>
+
+                <div className="p-4 rounded-xl bg-put/10 border border-put/30">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-put shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-put font-medium text-sm">Warning: Unlimited Loss Potential</p>
+                      <p className="text-text-secondary text-sm mt-1">
+                        Writing options exposes you to potentially unlimited losses. Only write options
+                        if you understand the risks and can afford to lose your entire margin.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -349,37 +422,41 @@ export function Docs() {
             {activeSection === 'risk' && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-term-red mb-2">
-                    &gt; RISK_WARNING_
+                  <h1 className="text-2xl font-bold text-text-primary mb-3">
+                    Risk Disclosure
                   </h1>
-                  <p className="text-term-text-dim text-sm">
+                  <p className="text-text-secondary">
                     Important information about trading risks.
                   </p>
                 </div>
 
-                <div className="bg-term-red/10 border border-term-red/50 p-6">
+                <div className="p-6 rounded-xl bg-put/10 border border-put/30">
                   <div className="flex items-start gap-4">
-                    <Shield className="w-8 h-8 text-term-red shrink-0" />
+                    <Shield className="w-8 h-8 text-put shrink-0" />
                     <div className="space-y-3">
-                      <p className="text-term-red text-sm font-bold">
-                        LEVERAGED TRADING IS HIGH RISK
+                      <p className="text-put font-bold">
+                        OPTIONS TRADING INVOLVES SIGNIFICANT RISK
                       </p>
-                      <ul className="text-term-text-dim text-xs space-y-2">
+                      <ul className="text-text-secondary text-sm space-y-2">
                         <li className="flex items-start gap-2">
-                          <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
-                          You can lose your entire margin if liquidated
+                          <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                          Buyers can lose their entire premium
                         </li>
                         <li className="flex items-start gap-2">
-                          <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
+                          <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                          Writers face unlimited loss potential
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
                           Only trade with funds you can afford to lose
                         </li>
                         <li className="flex items-start gap-2">
-                          <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
-                          Past performance is not indicative of future results
+                          <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                          Prediction markets can be volatile and illiquid
                         </li>
                         <li className="flex items-start gap-2">
-                          <ChevronRight className="w-3 h-3 text-term-red shrink-0 mt-0.5" />
-                          Prediction markets can be volatile and illiquid
+                          <ChevronRight className="w-4 h-4 text-put shrink-0 mt-0.5" />
+                          Past performance does not guarantee future results
                         </li>
                       </ul>
                     </div>
@@ -387,22 +464,24 @@ export function Docs() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-term-dark border border-term-border p-4">
-                    <div className="text-term-amber text-sm mb-2">DO</div>
-                    <ul className="text-term-text-dim text-xs space-y-1">
-                      <li>+ Start with low leverage</li>
-                      <li>+ Use appropriate position sizing</li>
-                      <li>+ Monitor your positions</li>
-                      <li>+ Understand liquidation prices</li>
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                    <div className="text-call font-medium mb-2">Best Practices</div>
+                    <ul className="text-text-secondary text-sm space-y-1">
+                      <li>+ Start with buying options</li>
+                      <li>+ Use small position sizes</li>
+                      <li>+ Understand the Greeks</li>
+                      <li>+ Monitor time decay</li>
+                      <li>+ Diversify across markets</li>
                     </ul>
                   </div>
-                  <div className="bg-term-dark border border-term-border p-4">
-                    <div className="text-term-red text-sm mb-2">DON'T</div>
-                    <ul className="text-term-text-dim text-xs space-y-1">
-                      <li>- Trade with rent money</li>
-                      <li>- Use maximum leverage</li>
-                      <li>- Ignore liquidation warnings</li>
-                      <li>- FOMO into positions</li>
+                  <div className="p-4 rounded-xl bg-bg-secondary border border-glass-border">
+                    <div className="text-put font-medium mb-2">Avoid</div>
+                    <ul className="text-text-secondary text-sm space-y-1">
+                      <li>- Trading with rent money</li>
+                      <li>- Writing naked options</li>
+                      <li>- Ignoring expiration dates</li>
+                      <li>- Over-concentrating positions</li>
+                      <li>- Chasing losses</li>
                     </ul>
                   </div>
                 </div>

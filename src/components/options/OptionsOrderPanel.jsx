@@ -20,7 +20,7 @@ function OptionsOrderPanel() {
     orderValue,
   } = useOptions()
 
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, updateBalance } = useAuth()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -47,17 +47,52 @@ function OptionsOrderPanel() {
       return
     }
 
-    if (!isOptionAvailable) {
-      toast.error('This option has no liquidity - no writers available')
-      return
+    const premium = orderValue?.totalPremium || 0
+    const isBuyingOrder = positionDirection === 'BUY'
+
+    // For buying: check if user can afford the premium
+    if (isBuyingOrder) {
+      if (!isOptionAvailable) {
+        toast.error('This option has no liquidity - no writers available')
+        return
+      }
+
+      if ((user?.balance || 0) < premium) {
+        toast.error(`Insufficient balance. You need $${premium.toFixed(2)} but only have $${(user?.balance || 0).toFixed(2)}`)
+        return
+      }
+    }
+
+    // For selling/writing: check if user has margin (simplified - require premium as collateral)
+    if (!isBuyingOrder) {
+      const requiredMargin = premium * 2 // Simplified margin requirement
+      if ((user?.balance || 0) < requiredMargin) {
+        toast.error(`Insufficient margin. Writing requires $${requiredMargin.toFixed(2)} collateral`)
+        return
+      }
     }
 
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
 
-    const action = positionDirection === 'BUY' ? 'Bought' : 'Sold'
-    toast.success(`${action} ${quantity} ${selectedType} at ${selectedStrike}¢`)
-    setIsSubmitting(false)
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      // Update balance
+      if (isBuyingOrder) {
+        // Buying: pay premium
+        await updateBalance(user.balance - premium)
+        toast.success(`Bought ${quantity} ${selectedType} at ${selectedStrike}¢ — Paid $${premium.toFixed(2)}`)
+      } else {
+        // Selling/Writing: receive premium (but lock collateral in real implementation)
+        await updateBalance(user.balance + premium)
+        toast.success(`Wrote ${quantity} ${selectedType} at ${selectedStrike}¢ — Received $${premium.toFixed(2)} premium`)
+      }
+    } catch (err) {
+      toast.error('Transaction failed. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const isCall = selectedType === 'CALL'

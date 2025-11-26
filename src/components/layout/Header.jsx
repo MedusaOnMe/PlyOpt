@@ -72,11 +72,8 @@ export function Header() {
         <div className="h-14 px-4 lg:px-6 flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-call via-accent-purple to-put flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PO</span>
-              </div>
-              <span className="text-lg font-semibold text-text-primary hidden sm:block">
+            <Link to="/" className="flex items-center">
+              <span className="text-lg font-bold text-text-primary">
                 PolyOptions
               </span>
             </Link>
@@ -118,13 +115,15 @@ export function Header() {
                 <BookOpen size={18} />
               </Link>
               <a
-                href="https://x.com/PolyOptions_"
+                href="https://x.com/OptionsPoly"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-glass-hover transition-all"
-                title="Twitter"
+                title="X / Twitter"
               >
-                <ExternalLink size={18} />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
               </a>
             </div>
 
@@ -232,13 +231,15 @@ export function Header() {
               Documentation
             </Link>
             <a
-              href="https://x.com/PolyOptions_"
+              href="https://x.com/OptionsPoly"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-3 rounded-lg text-sm text-text-primary hover:bg-glass-hover transition-all flex items-center gap-2"
             >
-              <ExternalLink size={16} />
-              Twitter
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              X / Twitter
             </a>
           </nav>
         )}

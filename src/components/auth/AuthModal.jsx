@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Mail, Eye, EyeOff, Terminal } from 'lucide-react'
+import { Mail, Eye, EyeOff, Wallet } from 'lucide-react'
 import { Modal } from '../ui/Modal'
-import { Button } from '../ui/Button'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
+import GradientButton from '../ui/GradientButton'
 
 export function AuthModal({ isOpen, onClose }) {
   const [mode, setMode] = useState('register') // 'login' or 'register'
@@ -34,7 +34,7 @@ export function AuthModal({ isOpen, onClose }) {
           throw new Error('Please enter a valid email')
         }
         await register(email, password)
-        toast.success('Account created! Welcome to Polynomial!')
+        toast.success('Account created! Welcome to PolyOptions!')
       } else {
         await login(email, password)
         toast.success('Welcome back!')
@@ -59,46 +59,49 @@ export function AuthModal({ isOpen, onClose }) {
       <div>
         {/* Logo and header */}
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto mb-4 border border-term-green flex items-center justify-center bg-term-green/10">
-            <Terminal className="w-7 h-7 text-term-green" />
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-call via-accent-purple to-put flex items-center justify-center">
+            <Wallet className="w-7 h-7 text-white" />
           </div>
-          <h2 className="text-lg font-bold text-term-green term-glow mb-2">
-            {mode === 'register' ? '> CREATE_ACCOUNT' : '> LOGIN'}
+          <h2 className="text-xl font-bold text-text-primary mb-2">
+            {mode === 'register' ? 'Create Account' : 'Welcome Back'}
           </h2>
-          <p className="text-term-text-dim text-xs">
+          <p className="text-text-secondary text-sm">
             {mode === 'register'
-              ? 'Trade prediction markets with up to 25x leverage'
+              ? 'Trade options on any prediction market'
               : 'Sign in to access your account'
             }
           </p>
+          {mode === 'register' && (
+            <p className="text-xs text-profit mt-1">Email verification is NOT required</p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-2 border border-term-red/30 bg-term-red/10 text-xs text-term-red">
-              &gt; ERROR: {error}
+            <div className="p-3 rounded-lg border border-loss/30 bg-loss/10 text-sm text-loss">
+              {error}
             </div>
           )}
 
           <div>
-            <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+            <label className="block text-xs text-text-tertiary uppercase tracking-wider mb-2">
               Email
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-term-text-dim" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
+                placeholder="you@example.com"
                 required
-                className="w-full bg-term-black border border-term-border pl-10 pr-4 py-2 text-xs text-term-text placeholder:text-term-text-dim"
+                className="w-full bg-bg-tertiary border border-glass-border rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-purple focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+            <label className="block text-xs text-text-tertiary uppercase tracking-wider mb-2">
               Password
             </label>
             <div className="relative">
@@ -106,14 +109,14 @@ export function AuthModal({ isOpen, onClose }) {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="********"
+                placeholder="Enter password"
                 required
-                className="w-full bg-term-black border border-term-border px-4 py-2 pr-10 text-xs text-term-text placeholder:text-term-text-dim"
+                className="w-full bg-bg-tertiary border border-glass-border rounded-lg px-4 py-3 pr-10 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-purple focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-term-text-dim hover:text-term-text"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -122,38 +125,38 @@ export function AuthModal({ isOpen, onClose }) {
 
           {mode === 'register' && (
             <div>
-              <label className="block text-[10px] text-term-text-dim uppercase mb-1">
+              <label className="block text-xs text-text-tertiary uppercase tracking-wider mb-2">
                 Confirm Password
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="********"
+                placeholder="Confirm password"
                 required
-                className="w-full bg-term-black border border-term-border px-4 py-2 text-xs text-term-text placeholder:text-term-text-dim"
+                className="w-full bg-bg-tertiary border border-glass-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-purple focus:outline-none transition-colors"
               />
             </div>
           )}
 
-          <Button
+          <GradientButton
             type="submit"
             loading={loading}
-            variant="success"
+            variant="purple"
             size="lg"
-            className="w-full"
+            fullWidth
           >
-            &gt; {mode === 'register' ? 'CREATE_ACCOUNT' : 'LOGIN'}
-          </Button>
+            {mode === 'register' ? 'Create Account' : 'Sign In'}
+          </GradientButton>
         </form>
 
-        <p className="text-xs text-term-text-dim text-center mt-4">
+        <p className="text-sm text-text-secondary text-center mt-4">
           {mode === 'register' ? (
             <>
               Already have an account?{' '}
               <button
                 onClick={() => { setMode('login'); resetForm() }}
-                className="text-term-green hover:underline"
+                className="text-accent-purple hover:underline font-medium"
               >
                 Sign in
               </button>
@@ -163,7 +166,7 @@ export function AuthModal({ isOpen, onClose }) {
               Don't have an account?{' '}
               <button
                 onClick={() => { setMode('register'); resetForm() }}
-                className="text-term-green hover:underline"
+                className="text-accent-purple hover:underline font-medium"
               >
                 Create one
               </button>
