@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useOptions } from '../../context/OptionsContext'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 
 function PayoffDiagram() {
-  const { selectedOption, orderValue, selectedType, selectedStrike, spotPrice, quantity } = useOptions()
+  const { selectedOption, orderValue, selectedType, selectedStrike, spotPrice, quantity, positionDirection } = useOptions()
 
   const chartData = useMemo(() => {
     if (!selectedOption || !orderValue) return null
@@ -11,6 +11,7 @@ function PayoffDiagram() {
     const premium = orderValue.premium * quantity
     const strike = selectedStrike
     const isCall = selectedType === 'CALL'
+    const isBuying = positionDirection === 'BUY'
 
     const minPrice = Math.max(0, spotPrice * 0.7)
     const maxPrice = spotPrice * 1.3
@@ -20,9 +21,15 @@ function PayoffDiagram() {
     for (let price = minPrice; price <= maxPrice; price += step) {
       let pnl
       if (isCall) {
-        pnl = Math.max(0, price - strike) * quantity - premium
+        // Long call: pay premium, profit when price > strike + premium
+        // Short call: receive premium, lose when price > strike + premium
+        const intrinsic = Math.max(0, price - strike) * quantity
+        pnl = isBuying ? (intrinsic - premium) : (premium - intrinsic)
       } else {
-        pnl = Math.max(0, strike - price) * quantity - premium
+        // Long put: pay premium, profit when price < strike - premium
+        // Short put: receive premium, lose when price < strike - premium
+        const intrinsic = Math.max(0, strike - price) * quantity
+        pnl = isBuying ? (intrinsic - premium) : (premium - intrinsic)
       }
       points.push({ price, pnl })
     }
@@ -31,8 +38,8 @@ function PayoffDiagram() {
     const minPnl = Math.min(...points.map(p => p.pnl))
     const pnlRange = maxPnl - minPnl || 1
 
-    return { points, minPrice, maxPrice, maxPnl, minPnl, pnlRange, breakeven: orderValue.breakeven, strike, premium, isCall }
-  }, [selectedOption, orderValue, selectedType, selectedStrike, spotPrice, quantity])
+    return { points, minPrice, maxPrice, maxPnl, minPnl, pnlRange, breakeven: orderValue.breakeven, strike, premium, isCall, isBuying }
+  }, [selectedOption, orderValue, selectedType, selectedStrike, spotPrice, quantity, positionDirection])
 
   if (!chartData) {
     return (
@@ -50,7 +57,7 @@ function PayoffDiagram() {
     )
   }
 
-  const { points, minPrice, maxPrice, maxPnl, minPnl, pnlRange, breakeven, strike, isCall } = chartData
+  const { points, minPrice, maxPrice, maxPnl, minPnl, pnlRange, breakeven, strike, isCall, isBuying } = chartData
 
   // SVG dimensions - optimized for readability
   const width = 500
@@ -90,17 +97,24 @@ function PayoffDiagram() {
       return `L ${x} ${y}`
     }).join(' ') + ' Z'
 
+  // Colors based on position direction
+  const lineColor = isBuying ? (isCall ? '#00D4FF' : '#FF3D71') : '#F59E0B'
+  const profitColor = isBuying ? (isCall ? '#00D4FF' : '#FF3D71') : '#10B981'
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="px-4 py-2.5 border-b border-glass-border flex items-center justify-between shrink-0">
         <h3 className="text-sm font-semibold text-text-primary">Payoff at Expiry</h3>
-        <div className="flex items-center gap-4 text-xs text-text-tertiary">
+        <div className="flex items-center gap-3 text-xs text-text-tertiary">
           <span className="flex items-center gap-1.5">
             <div className="w-3 h-0.5 bg-accent-purple rounded" /> Strike
           </span>
           <span className="flex items-center gap-1.5">
-            <div className="w-3 h-0.5 bg-accent-gold rounded" /> Breakeven
+            <div className="w-3 h-0.5 bg-accent-gold rounded" /> BE
+          </span>
+          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${isBuying ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
+            {isBuying ? 'LONG' : 'SHORT'}
           </span>
           <span className={`px-2 py-0.5 rounded text-xs font-semibold ${isCall ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
             {selectedType}
@@ -113,8 +127,8 @@ function PayoffDiagram() {
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={isCall ? '#00D4FF' : '#FF3D71'} stopOpacity="0.4" />
-              <stop offset="100%" stopColor={isCall ? '#00D4FF' : '#FF3D71'} stopOpacity="0.05" />
+              <stop offset="0%" stopColor={profitColor} stopOpacity="0.4" />
+              <stop offset="100%" stopColor={profitColor} stopOpacity="0.05" />
             </linearGradient>
             <linearGradient id="lossGradient" x1="0" y1="1" x2="0" y2="0">
               <stop offset="0%" stopColor="#EF4444" stopOpacity="0.4" />
@@ -134,7 +148,7 @@ function PayoffDiagram() {
           {lossPath !== ' Z' && <path d={lossPath} fill="url(#lossGradient)" />}
 
           {/* Payoff line */}
-          <path d={pathD} fill="none" stroke={isCall ? '#00D4FF' : '#FF3D71'} strokeWidth="3" strokeLinecap="round" />
+          <path d={pathD} fill="none" stroke={lineColor} strokeWidth="3" strokeLinecap="round" />
 
           {/* Strike line */}
           <line x1={xScale(strike)} y1={padding.top} x2={xScale(strike)} y2={height - padding.bottom} stroke="#8B5CF6" strokeWidth="2" strokeDasharray="6,4" />

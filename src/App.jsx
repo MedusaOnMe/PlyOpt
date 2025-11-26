@@ -23,13 +23,13 @@ function TradingPage() {
   const [mobileTab, setMobileTab] = useState('chart')
 
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
+    <div className="h-screen bg-bg-primary flex flex-col overflow-hidden">
       <Header />
 
-      {/* Main content */}
-      <main className="flex-1 flex overflow-auto">
+      {/* Main content - fills remaining viewport */}
+      <main className="flex-1 flex min-h-0">
         {/* Collapsible Markets Sidebar */}
-        <div className={`hidden lg:flex transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
+        <div className={`hidden lg:flex transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-0'} overflow-hidden shrink-0`}>
           <MarketsSidebar />
         </div>
 
@@ -45,10 +45,10 @@ function TradingPage() {
           )}
         </button>
 
-        {/* Main workspace - Desktop - uses fixed heights for scrollability */}
-        <div className="hidden lg:flex flex-1 flex-col">
-          {/* Row 1: Chart + OrderBook + Order Panel */}
-          <div className="h-[400px] flex border-b border-glass-border shrink-0">
+        {/* Main workspace - Desktop - uses flex to fill viewport */}
+        <div className="hidden lg:flex flex-1 flex-col min-h-0 overflow-auto">
+          {/* Row 1: Chart + OrderBook + Order Panel - 45% */}
+          <div className="flex-[45] min-h-[300px] flex border-b border-glass-border">
             {/* Chart */}
             <div className="flex-1 min-w-0 border-r border-glass-border">
               <TradingChart />
@@ -65,8 +65,8 @@ function TradingPage() {
             </div>
           </div>
 
-          {/* Row 2: Options Chain + Payoff */}
-          <div className="h-[380px] flex border-b border-glass-border shrink-0">
+          {/* Row 2: Options Chain + Payoff - 38% */}
+          <div className="flex-[38] min-h-[280px] flex border-b border-glass-border">
             {/* Options Chain */}
             <div className="flex-1 min-w-0 border-r border-glass-border overflow-hidden">
               <OptionsChain />
@@ -78,8 +78,8 @@ function TradingPage() {
             </div>
           </div>
 
-          {/* Row 3: Positions - Full Width */}
-          <div className="h-[200px] shrink-0">
+          {/* Row 3: Positions - Full Width - 17% */}
+          <div className="flex-[17] min-h-[140px]">
             <PositionsPanel />
           </div>
         </div>

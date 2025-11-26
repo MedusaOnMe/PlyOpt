@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext'
 import OptionTypeToggle from './OptionTypeToggle'
 import PremiumCalculator from './PremiumCalculator'
 import GradientButton from '../ui/GradientButton'
-import { Minus, Plus, Wallet } from 'lucide-react'
+import { Minus, Plus, Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 
 function OptionsOrderPanel() {
   const {
@@ -13,6 +13,8 @@ function OptionsOrderPanel() {
     selectedType,
     selectedStrike,
     selectedExpiration,
+    positionDirection,
+    selectDirection,
     quantity,
     updateQuantity,
     orderValue,
@@ -44,18 +46,21 @@ function OptionsOrderPanel() {
 
     setIsSubmitting(true)
     await new Promise(resolve => setTimeout(resolve, 1500))
-    toast.success(`Bought ${quantity} ${selectedType} at ${selectedStrike}¢`)
+
+    const action = positionDirection === 'BUY' ? 'Bought' : 'Sold'
+    toast.success(`${action} ${quantity} ${selectedType} at ${selectedStrike}¢`)
     setIsSubmitting(false)
   }
 
   const isCall = selectedType === 'CALL'
+  const isBuying = positionDirection === 'BUY'
   const buttonVariant = isCall ? 'call' : 'put'
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="px-3 py-2 border-b border-glass-border flex items-center justify-between shrink-0">
-        <h2 className="text-sm font-semibold text-text-primary">Trade</h2>
+        <h2 className="text-sm font-semibold text-text-primary">Trade Options</h2>
         {isAuthenticated && user?.balance !== undefined && (
           <div className="flex items-center gap-1 text-xs">
             <Wallet size={12} className="text-text-tertiary" />
@@ -66,6 +71,39 @@ function OptionsOrderPanel() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Buy/Sell Toggle */}
+        <div className="flex rounded-lg bg-bg-tertiary p-0.5">
+          <button
+            onClick={() => selectDirection('BUY')}
+            className={`
+              flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md
+              font-semibold text-xs transition-all duration-200
+              ${isBuying
+                ? 'bg-call text-bg-primary shadow-glow-call'
+                : 'text-text-secondary hover:text-call hover:bg-call/10'
+              }
+            `}
+          >
+            <ArrowUpCircle size={14} />
+            <span>BUY</span>
+          </button>
+
+          <button
+            onClick={() => selectDirection('SELL')}
+            className={`
+              flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md
+              font-semibold text-xs transition-all duration-200
+              ${!isBuying
+                ? 'bg-put text-bg-primary shadow-glow-put'
+                : 'text-text-secondary hover:text-put hover:bg-put/10'
+              }
+            `}
+          >
+            <ArrowDownCircle size={14} />
+            <span>SELL</span>
+          </button>
+        </div>
+
         {/* Option Type Toggle */}
         <OptionTypeToggle />
 
@@ -74,6 +112,9 @@ function OptionsOrderPanel() {
           <div className="p-2 rounded-lg bg-bg-tertiary/50 border border-glass-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isBuying ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
+                  {positionDirection}
+                </span>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isCall ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
                   {selectedType}
                 </span>
@@ -98,7 +139,7 @@ function OptionsOrderPanel() {
         {/* Quantity Selector */}
         <div>
           <label className="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1.5">
-            Quantity
+            Contracts
           </label>
           <div className="flex items-center gap-1.5">
             <button
@@ -152,7 +193,7 @@ function OptionsOrderPanel() {
       {/* Submit Button */}
       <div className="p-3 border-t border-glass-border shrink-0">
         <GradientButton
-          variant={buttonVariant}
+          variant={isBuying ? 'call' : 'put'}
           size="md"
           fullWidth
           disabled={!selectedOption || !isAuthenticated}
@@ -163,9 +204,18 @@ function OptionsOrderPanel() {
             ? 'Connect Wallet'
             : !selectedOption
               ? 'Select Option'
-              : `Buy ${selectedType} $${orderValue?.totalPremium?.toFixed(2) || '0'}`
+              : isBuying
+                ? `Buy ${selectedType} — Pay $${orderValue?.totalPremium?.toFixed(2) || '0'}`
+                : `Sell ${selectedType} — Receive $${orderValue?.totalPremium?.toFixed(2) || '0'}`
           }
         </GradientButton>
+
+        {/* Risk Warning for Selling */}
+        {!isBuying && selectedOption && (
+          <p className="text-[9px] text-put/80 text-center mt-2">
+            Writing options has unlimited loss potential. Margin required.
+          </p>
+        )}
       </div>
     </div>
   )

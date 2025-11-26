@@ -232,6 +232,7 @@ export function OptionsProvider({ children }) {
   const [selectedExpiration, setSelectedExpiration] = useState(null)
   const [selectedStrike, setSelectedStrike] = useState(null)
   const [selectedType, setSelectedType] = useState('CALL')
+  const [positionDirection, setPositionDirection] = useState('BUY') // BUY or SELL
   const [quantity, setQuantity] = useState(1)
 
   // Generate expirations
@@ -271,28 +272,49 @@ export function OptionsProvider({ children }) {
     }
   }, [optionsChain, selectedStrike, selectedType])
 
-  // Calculate order value
+  // Calculate order value based on position direction
   const orderValue = useMemo(() => {
     if (!selectedOption) return null
 
-    const premium = selectedOption.data.ask
+    const isBuying = positionDirection === 'BUY'
+    // Buyers pay ask, sellers receive bid
+    const premium = isBuying ? selectedOption.data.ask : selectedOption.data.bid
     const totalPremium = premium * quantity
-    const maxProfit = selectedType === 'CALL'
-      ? (100 - selectedStrike - premium) * quantity  // Max profit for call
-      : (selectedStrike - premium) * quantity         // Max profit for put
-    const maxLoss = totalPremium
-    const breakeven = selectedType === 'CALL'
-      ? selectedStrike + premium
-      : selectedStrike - premium
+
+    let maxProfit, maxLoss, breakeven
+
+    if (isBuying) {
+      // Long position: pay premium, limited loss, unlimited/large profit potential
+      if (selectedType === 'CALL') {
+        maxProfit = (100 - selectedStrike - premium) * quantity
+        breakeven = selectedStrike + premium
+      } else {
+        maxProfit = (selectedStrike - premium) * quantity
+        breakeven = selectedStrike - premium
+      }
+      maxLoss = totalPremium
+    } else {
+      // Short position: receive premium, limited profit, unlimited/large loss potential
+      if (selectedType === 'CALL') {
+        maxProfit = totalPremium // Premium received is max profit
+        maxLoss = (100 - selectedStrike - premium) * quantity // Unlimited in theory, capped at 100¢
+        breakeven = selectedStrike + premium
+      } else {
+        maxProfit = totalPremium
+        maxLoss = (selectedStrike - premium) * quantity
+        breakeven = selectedStrike - premium
+      }
+    }
 
     return {
       premium,
       totalPremium: Math.round(totalPremium * 100) / 100,
-      maxProfit: Math.round(maxProfit * 100) / 100,
-      maxLoss: Math.round(maxLoss * 100) / 100,
+      maxProfit: Math.round(Math.max(0, maxProfit) * 100) / 100,
+      maxLoss: Math.round(Math.max(0, maxLoss) * 100) / 100,
       breakeven: Math.round(breakeven * 100) / 100,
+      isBuying,
     }
-  }, [selectedOption, quantity, selectedType, selectedStrike])
+  }, [selectedOption, quantity, selectedType, selectedStrike, positionDirection])
 
   // Select a strike from the chain
   const selectStrike = useCallback((strike) => {
@@ -302,6 +324,11 @@ export function OptionsProvider({ children }) {
   // Select option type
   const selectType = useCallback((type) => {
     setSelectedType(type)
+  }, [])
+
+  // Select position direction (BUY or SELL)
+  const selectDirection = useCallback((direction) => {
+    setPositionDirection(direction)
   }, [])
 
   // Change expiration
@@ -325,6 +352,7 @@ export function OptionsProvider({ children }) {
     selectedExpiration,
     selectedStrike,
     selectedType,
+    positionDirection,
     selectedOption,
     quantity,
     orderValue,
@@ -333,6 +361,7 @@ export function OptionsProvider({ children }) {
     selectExpiration,
     selectStrike,
     selectType,
+    selectDirection,
     updateQuantity,
   }
 
