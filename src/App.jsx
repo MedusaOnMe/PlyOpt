@@ -47,55 +47,54 @@ function TradingPage() {
 
         {/* Main workspace - Desktop */}
         <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
-          {/* Top section: Chart + Order Panel */}
-          <div className="flex-[55] flex min-h-0 border-b border-glass-border">
+          {/* Row 1: Chart + OrderBook + Order Panel */}
+          <div className="flex-[50] flex min-h-0 border-b border-glass-border">
             {/* Chart */}
             <div className="flex-1 min-w-0 border-r border-glass-border">
               <TradingChart />
             </div>
 
-            {/* Right column: Order Panel + Payoff */}
-            <div className="w-[360px] flex flex-col shrink-0">
-              <div className="flex-[65] border-b border-glass-border overflow-hidden">
-                <OptionsOrderPanel />
-              </div>
-              <div className="flex-[35] overflow-hidden">
-                <PayoffDiagram />
-              </div>
+            {/* Order Book */}
+            <div className="w-[220px] border-r border-glass-border overflow-hidden shrink-0">
+              <OrderBook />
+            </div>
+
+            {/* Order Panel */}
+            <div className="w-[300px] overflow-hidden shrink-0">
+              <OptionsOrderPanel />
             </div>
           </div>
 
-          {/* Bottom section: Options Chain + Order Book + Positions */}
-          <div className="flex-[45] flex min-h-0">
-            {/* Options Chain - main focus */}
+          {/* Row 2: Options Chain + Payoff */}
+          <div className="flex-[35] flex min-h-0 border-b border-glass-border">
+            {/* Options Chain */}
             <div className="flex-1 min-w-0 border-r border-glass-border overflow-hidden">
               <OptionsChain />
             </div>
 
-            {/* Order Book */}
-            <div className="w-[280px] border-r border-glass-border overflow-hidden shrink-0">
-              <OrderBook />
+            {/* Payoff Diagram */}
+            <div className="w-[520px] overflow-hidden shrink-0">
+              <PayoffDiagram />
             </div>
+          </div>
 
-            {/* Positions */}
-            <div className="w-[320px] overflow-hidden shrink-0">
-              <PositionsPanel />
-            </div>
+          {/* Row 3: Positions - Full Width */}
+          <div className="flex-[15] min-h-[120px] overflow-hidden">
+            <PositionsPanel />
           </div>
         </div>
 
         {/* Mobile workspace */}
         <div className="flex lg:hidden flex-1 flex-col overflow-hidden">
-          {/* Mobile content based on tab */}
           <div className="flex-1 overflow-hidden">
             {mobileTab === 'chart' && <TradingChart />}
             {mobileTab === 'chain' && <OptionsChain />}
             {mobileTab === 'trade' && (
               <div className="h-full flex flex-col">
-                <div className="flex-[60] border-b border-glass-border overflow-auto">
+                <div className="flex-1 overflow-auto">
                   <OptionsOrderPanel />
                 </div>
-                <div className="flex-[40] overflow-hidden">
+                <div className="h-[200px] shrink-0 border-t border-glass-border">
                   <PayoffDiagram />
                 </div>
               </div>

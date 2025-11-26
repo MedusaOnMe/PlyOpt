@@ -1,14 +1,14 @@
 import { useOptions } from '../../context/OptionsContext'
-import { TrendingUp, TrendingDown, Target, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, Target } from 'lucide-react'
 
 function PremiumCalculator() {
   const { selectedOption, orderValue, quantity, selectedType } = useOptions()
 
   if (!selectedOption || !orderValue) {
     return (
-      <div className="p-4 rounded-lg bg-bg-tertiary/50 border border-glass-border">
-        <div className="text-center text-text-tertiary text-sm py-4">
-          Select an option from the chain to see order details
+      <div className="p-2 rounded-lg bg-bg-tertiary/50 border border-glass-border">
+        <div className="text-center text-text-tertiary text-xs py-2">
+          Select option to see details
         </div>
       </div>
     )
@@ -17,102 +17,73 @@ function PremiumCalculator() {
   const isCall = selectedType === 'CALL'
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Premium Display */}
-      <div className="p-4 rounded-lg bg-bg-tertiary/50 border border-glass-border">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-text-tertiary text-xs uppercase tracking-wider">Premium</span>
-          <span className="text-text-tertiary text-xs">per contract</span>
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className={`text-3xl font-bold numeric ${isCall ? 'text-call text-glow-call' : 'text-put text-glow-put'}`}>
-            ${orderValue.premium.toFixed(2)}
-          </span>
-          <span className="text-text-secondary text-sm">× {quantity}</span>
-        </div>
-        <div className="mt-2 pt-2 border-t border-glass-border">
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary text-sm">Total Cost</span>
-            <span className="text-text-primary font-semibold numeric">
-              ${orderValue.totalPremium.toFixed(2)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Risk/Reward Summary */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Max Profit */}
-        <div className="p-3 rounded-lg bg-profit/10 border border-profit/20">
-          <div className="flex items-center gap-1.5 mb-1">
-            <TrendingUp size={14} className="text-profit" />
-            <span className="text-xs text-profit uppercase tracking-wider">Max Profit</span>
-          </div>
-          <div className="text-lg font-semibold text-profit numeric">
-            {orderValue.maxProfit > 0 ? `$${orderValue.maxProfit.toFixed(2)}` : 'Unlimited'}
-          </div>
-        </div>
-
-        {/* Max Loss */}
-        <div className="p-3 rounded-lg bg-loss/10 border border-loss/20">
-          <div className="flex items-center gap-1.5 mb-1">
-            <TrendingDown size={14} className="text-loss" />
-            <span className="text-xs text-loss uppercase tracking-wider">Max Loss</span>
-          </div>
-          <div className="text-lg font-semibold text-loss numeric">
-            ${orderValue.maxLoss.toFixed(2)}
-          </div>
-        </div>
-      </div>
-
-      {/* Breakeven */}
-      <div className="p-3 rounded-lg bg-bg-tertiary/50 border border-glass-border">
+      <div className="p-2 rounded-lg bg-bg-tertiary/50 border border-glass-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Target size={14} className="text-accent-purple" />
-            <span className="text-xs text-text-tertiary uppercase tracking-wider">Breakeven</span>
+          <span className="text-text-tertiary text-[10px] uppercase">Premium</span>
+          <div className="flex items-baseline gap-1">
+            <span className={`text-lg font-bold font-mono ${isCall ? 'text-call' : 'text-put'}`}>
+              ${orderValue.premium.toFixed(2)}
+            </span>
+            <span className="text-text-tertiary text-[10px]">× {quantity}</span>
           </div>
-          <span className="text-accent-purple font-semibold numeric text-glow-purple">
-            {orderValue.breakeven.toFixed(0)}¢
-          </span>
         </div>
-        <div className="mt-2 text-xs text-text-tertiary">
-          {isCall
-            ? `Price must exceed ${orderValue.breakeven.toFixed(0)}¢ at expiry to profit`
-            : `Price must fall below ${orderValue.breakeven.toFixed(0)}¢ at expiry to profit`
-          }
+        <div className="flex items-center justify-between mt-1 pt-1 border-t border-glass-border/50">
+          <span className="text-text-secondary text-xs">Total</span>
+          <span className="text-text-primary font-semibold font-mono text-sm">
+            ${orderValue.totalPremium.toFixed(2)}
+          </span>
         </div>
       </div>
 
-      {/* Greeks Summary */}
+      {/* Risk/Reward + Breakeven in one row */}
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="p-2 rounded bg-profit/10 border border-profit/20">
+          <div className="flex items-center gap-1 mb-0.5">
+            <TrendingUp size={10} className="text-profit" />
+            <span className="text-[9px] text-profit uppercase">Max Profit</span>
+          </div>
+          <div className="text-xs font-semibold text-profit font-mono">
+            {orderValue.maxProfit > 0 ? `$${orderValue.maxProfit.toFixed(0)}` : '∞'}
+          </div>
+        </div>
+
+        <div className="p-2 rounded bg-loss/10 border border-loss/20">
+          <div className="flex items-center gap-1 mb-0.5">
+            <TrendingDown size={10} className="text-loss" />
+            <span className="text-[9px] text-loss uppercase">Max Loss</span>
+          </div>
+          <div className="text-xs font-semibold text-loss font-mono">
+            ${orderValue.maxLoss.toFixed(0)}
+          </div>
+        </div>
+
+        <div className="p-2 rounded bg-accent-purple/10 border border-accent-purple/20">
+          <div className="flex items-center gap-1 mb-0.5">
+            <Target size={10} className="text-accent-purple" />
+            <span className="text-[9px] text-accent-purple uppercase">Breakeven</span>
+          </div>
+          <div className="text-xs font-semibold text-accent-purple font-mono">
+            {orderValue.breakeven.toFixed(0)}¢
+          </div>
+        </div>
+      </div>
+
+      {/* Greeks inline */}
       {selectedOption.data && (
-        <div className="p-3 rounded-lg bg-bg-tertiary/30 border border-glass-border">
-          <div className="text-xs text-text-tertiary uppercase tracking-wider mb-2">Greeks</div>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div>
-              <div className="text-[10px] text-text-tertiary">Δ Delta</div>
-              <div className={`text-sm font-mono ${selectedOption.data.delta >= 0 ? 'text-call' : 'text-put'}`}>
-                {selectedOption.data.delta > 0 ? '+' : ''}{selectedOption.data.delta.toFixed(2)}
-              </div>
-            </div>
-            <div>
-              <div className="text-[10px] text-text-tertiary">Γ Gamma</div>
-              <div className="text-sm font-mono text-accent-purple">
-                {selectedOption.data.gamma.toFixed(3)}
-              </div>
-            </div>
-            <div>
-              <div className="text-[10px] text-text-tertiary">Θ Theta</div>
-              <div className="text-sm font-mono text-put">
-                {selectedOption.data.theta.toFixed(2)}
-              </div>
-            </div>
-            <div>
-              <div className="text-[10px] text-text-tertiary">V Vega</div>
-              <div className="text-sm font-mono text-accent-purple">
-                {selectedOption.data.vega.toFixed(2)}
-              </div>
-            </div>
+        <div className="flex items-center justify-between px-2 py-1.5 rounded bg-bg-tertiary/30 border border-glass-border">
+          <div className="flex items-center gap-3 text-[10px]">
+            <span className="text-text-tertiary">Greeks:</span>
+            <span className={`font-mono ${selectedOption.data.delta >= 0 ? 'text-call' : 'text-put'}`}>
+              Δ {selectedOption.data.delta > 0 ? '+' : ''}{selectedOption.data.delta.toFixed(2)}
+            </span>
+            <span className="font-mono text-text-secondary">
+              Γ {selectedOption.data.gamma.toFixed(3)}
+            </span>
+            <span className="font-mono text-put">
+              Θ {selectedOption.data.theta.toFixed(2)}
+            </span>
           </div>
         </div>
       )}
