@@ -43,18 +43,12 @@ export function MarketProvider({ children }) {
     const tokenId = selectedMarket.tokenIds?.[0] || selectedMarket.clobTokenIds?.[0]
     if (!tokenId || tokenId.startsWith('mock-')) return
 
-    console.log('[MarketContext] Subscribing to WebSocket for:', tokenId.slice(0, 30))
-
     const unsubscribe = subscribeToMarket(
       tokenId,
-      // On price change
       (newPrice) => {
-        console.log('[WS] Price update:', newPrice)
         setSelectedMarket(prev => prev ? { ...prev, yesPrice: newPrice } : prev)
       },
-      // On order book update
       (newBook) => {
-        console.log('[WS] Order book update:', newBook.bids?.length, 'bids,', newBook.asks?.length, 'asks')
         if (newBook.bids?.length > 0 || newBook.asks?.length > 0) {
           setOrderBook(newBook)
         }
@@ -62,7 +56,6 @@ export function MarketProvider({ children }) {
     )
 
     return () => {
-      console.log('[MarketContext] Unsubscribing from WebSocket')
       unsubscribe()
     }
   }, [selectedMarket?.id])

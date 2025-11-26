@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react'
 import { useMarket } from './MarketContext'
 import { STRIKE_COUNT, STRIKE_STEP_PERCENT } from '../utils/constants'
 
@@ -158,35 +158,63 @@ function seededRandom(seed) {
   return x - Math.floor(x)
 }
 
-// Generate realistic volume/OI based on moneyness - DETERMINISTIC
+// Generate realistic volume/OI for a NEW platform - very low numbers
 function generateVolumeOI(strike, daysToExpiry, moneyness, isCall) {
   // Create seed from strike and expiry for consistent values
   const seed = strike * 1000 + daysToExpiry + (isCall ? 0 : 500)
 
-  // Base values scale with time to expiry (more OI for popular near-term)
-  const timeMultiplier = daysToExpiry <= 7 ? 2.5 : daysToExpiry <= 14 ? 1.8 : daysToExpiry <= 30 ? 1.2 : 0.7
+  // New platform = very low OI. ATM options have most activity
+  const atmFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 8)
 
-  // ATM options have highest activity
-  const atmFactor = Math.exp(-Math.pow(moneyness - 1, 2) * 12)
+  // Near-term slightly more active
+  const timeMultiplier = daysToExpiry <= 7 ? 1.5 : daysToExpiry <= 14 ? 1.2 : 0.8
 
-  // Slight bias: calls more active for OTM calls, puts for OTM puts
-  const directionalBias = isCall
-    ? (moneyness < 1 ? 1.3 : 0.9)  // OTM calls more popular
-    : (moneyness > 1 ? 1.3 : 0.9)  // OTM puts more popular
+  // Small variance
+  const oiVariance = 0.5 + seededRandom(seed) * 1.0
 
-  // Calculate OI first (accumulates over time, larger base)
-  const oiMultiplier = atmFactor * directionalBias * timeMultiplier
-  const oiVariance = 0.7 + seededRandom(seed) * 0.6 // 0.7 to 1.3
-  const openInterest = Math.floor(15000 * oiMultiplier * oiVariance)
+  // Base OI is very low - this is a new platform!
+  // ATM might have 20-80 contracts, OTM much less
+  const baseOI = 30
+  const openInterest = Math.floor(baseOI * atmFactor * timeMultiplier * oiVariance)
 
-  // Volume is typically 5-20% of OI for liquid options
-  const volumeRatio = 0.05 + seededRandom(seed + 1) * 0.15 // 5% to 20%
-  const volume = Math.floor(openInterest * volumeRatio * (0.8 + seededRandom(seed + 2) * 0.4))
+  // Volume is low - maybe 0-30% of OI on a given day
+  const volumeRatio = seededRandom(seed + 1) * 0.3
+  const volume = Math.floor(openInterest * volumeRatio)
 
   return {
-    volume: Math.max(10, volume),
-    openInterest: Math.max(100, openInterest)
+    volume: Math.max(0, volume),
+    openInterest: Math.max(1, openInterest)
   }
+}
+
+// Determine if an option has been written - NEW PLATFORM so most are unwritten
+function hasLiquidity(strike, daysToExpiry, moneyness, isCall) {
+  const seed = strike * 1000 + daysToExpiry + (isCall ? 100 : 600)
+
+  // Only the closest ATM strike is guaranteed to have liquidity
+  if (Math.abs(moneyness - 1) < 0.015) return true
+
+  // Distance from ATM - this is the main factor
+  const otmFactor = Math.abs(moneyness - 1)
+
+  // New platform = very few writers. Base probability is LOW
+  // Only ~25% chance for near-ATM, dropping fast
+  const baseProbability = 0.25 - (otmFactor * 5.0)
+
+  // Near-term weekly has slightly better odds
+  const termBonus = daysToExpiry <= 7 ? 0.08 : daysToExpiry <= 14 ? 0.03 : -0.1
+
+  // Random factor - 40% of options get extra penalty (no writers showed up)
+  const randomPenalty = seededRandom(seed + 999) < 0.40 ? -0.2 : 0
+
+  // Another 25% just randomly unavailable
+  const extraRandom = seededRandom(seed + 777) < 0.25 ? -0.15 : 0
+
+  // Use seeded random for consistency
+  const roll = seededRandom(seed)
+  const finalProbability = Math.max(0.03, Math.min(0.60, baseProbability + termBonus + randomPenalty + extraRandom))
+
+  return roll < finalProbability
 }
 
 // Generate full options chain with realistic values
@@ -226,6 +254,10 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
     const callVolOI = generateVolumeOI(strike, expiration.daysToExpiry, moneyness, true)
     const putVolOI = generateVolumeOI(strike, expiration.daysToExpiry, moneyness, false)
 
+    // Determine if options have been written (have liquidity)
+    const callAvailable = hasLiquidity(strike, expiration.daysToExpiry, moneyness, true)
+    const putAvailable = hasLiquidity(strike, expiration.daysToExpiry, moneyness, false)
+
     chain.push({
       strike,
       isATM: Math.abs(moneyness - 1) < 0.02,
@@ -235,17 +267,21 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
       },
       iv: Math.round(iv * 10) / 10,
       call: {
-        bid: Math.max(0.01, Math.round((callPrice * (1 - spreadPercent / 2)) * 100) / 100),
-        ask: Math.round((callPrice * (1 + spreadPercent / 2)) * 100) / 100,
+        bid: callAvailable ? Math.max(0.01, Math.round((callPrice * (1 - spreadPercent / 2)) * 100) / 100) : 0,
+        ask: callAvailable ? Math.round((callPrice * (1 + spreadPercent / 2)) * 100) / 100 : 0,
         last: callPrice,
-        ...callVolOI,
+        volume: callAvailable ? callVolOI.volume : 0,
+        openInterest: callAvailable ? callVolOI.openInterest : 0,
+        available: callAvailable,
         ...callGreeks,
       },
       put: {
-        bid: Math.max(0.01, Math.round((putPrice * (1 - spreadPercent / 2)) * 100) / 100),
-        ask: Math.round((putPrice * (1 + spreadPercent / 2)) * 100) / 100,
+        bid: putAvailable ? Math.max(0.01, Math.round((putPrice * (1 - spreadPercent / 2)) * 100) / 100) : 0,
+        ask: putAvailable ? Math.round((putPrice * (1 + spreadPercent / 2)) * 100) / 100 : 0,
         last: putPrice,
-        ...putVolOI,
+        volume: putAvailable ? putVolOI.volume : 0,
+        openInterest: putAvailable ? putVolOI.openInterest : 0,
+        available: putAvailable,
         ...putGreeks,
       },
     })
@@ -254,32 +290,48 @@ function generateOptionsChain(spotPrice, expiration, baseIV = 55) {
   return chain
 }
 
+// Helper to get initial values
+function getInitialValues() {
+  const expirations = generateExpirations()
+  const expiration = expirations.length > 0 ? expirations[0] : null
+  const spotPrice = 50 // Default price
+
+  if (!expiration) {
+    return { expirations, expiration, spotPrice, chain: [], strike: null }
+  }
+
+  const chain = generateOptionsChain(spotPrice, expiration)
+  // Find ATM option that's available (has liquidity)
+  const atmOption = chain.find(row => row.isATM && (row.call.available || row.put.available))
+  const strike = atmOption ? atmOption.strike : (chain.length > 0 ? chain[Math.floor(chain.length / 2)].strike : null)
+
+  return { expirations, expiration, spotPrice, chain, strike }
+}
+
+const initialValues = getInitialValues()
+
 export function OptionsProvider({ children }) {
   const { selectedMarket, getCurrentPrice } = useMarket()
 
-  const [selectedExpiration, setSelectedExpiration] = useState(null)
-  const [selectedStrike, setSelectedStrike] = useState(null)
   const [selectedType, setSelectedType] = useState('CALL')
   const [positionDirection, setPositionDirection] = useState('BUY') // BUY or SELL
   const [quantity, setQuantity] = useState(1)
-  const hasAutoSelected = useRef(false)
 
-  // Generate expirations
+  // All expirations
   const expirations = useMemo(() => generateExpirations(), [])
 
-  // Set default expiration
-  useEffect(() => {
-    if (expirations.length > 0 && !selectedExpiration) {
-      setSelectedExpiration(expirations[0])
-    }
-  }, [expirations, selectedExpiration])
+  // Selected expiration - initialized to first
+  const [selectedExpiration, setSelectedExpiration] = useState(initialValues.expiration)
+
+  // Selected strike - initialized to ATM
+  const [selectedStrike, setSelectedStrike] = useState(initialValues.strike)
 
   // Get current underlying price (convert from 0-1 to cents for options)
   const spotPrice = useMemo(() => {
     const price = getCurrentPrice()
     // Convert Polymarket probability (0-1) to cents (0-100)
     return price ? Math.round(price * 100) : 50
-  }, [getCurrentPrice])
+  }, [selectedMarket])
 
   // Generate options chain for selected expiration
   const optionsChain = useMemo(() => {
@@ -287,23 +339,23 @@ export function OptionsProvider({ children }) {
     return generateOptionsChain(spotPrice, selectedExpiration)
   }, [spotPrice, selectedExpiration])
 
-  // Auto-select ATM strike on load
+  // Update selectedStrike when spot price changes significantly (new market selected)
   useEffect(() => {
-    if (optionsChain.length > 0 && !hasAutoSelected.current) {
-      hasAutoSelected.current = true
-      // Find ATM option or closest to spot
-      const atmOption = optionsChain.find(row => row.isATM)
-      if (atmOption) {
-        setSelectedStrike(atmOption.strike)
-      } else {
-        // Find closest strike to spot price
-        const closest = optionsChain.reduce((prev, curr) =>
-          Math.abs(curr.strike - spotPrice) < Math.abs(prev.strike - spotPrice) ? curr : prev
-        )
-        setSelectedStrike(closest.strike)
+    if (optionsChain.length > 0) {
+      // Check if current selectedStrike exists in the new chain
+      const strikeExists = optionsChain.some(row => row.strike === selectedStrike)
+      if (!strikeExists) {
+        // Select the ATM option for the new chain
+        const atmOption = optionsChain.find(row => row.isATM)
+        if (atmOption) {
+          setSelectedStrike(atmOption.strike)
+        } else {
+          const centerIndex = Math.floor(optionsChain.length / 2)
+          setSelectedStrike(optionsChain[centerIndex].strike)
+        }
       }
     }
-  }, [optionsChain, spotPrice])
+  }, [optionsChain, selectedStrike])
 
   // Get selected option details
   const selectedOption = useMemo(() => {

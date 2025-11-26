@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext'
 import OptionTypeToggle from './OptionTypeToggle'
 import PremiumCalculator from './PremiumCalculator'
 import GradientButton from '../ui/GradientButton'
-import { Minus, Plus, Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Minus, Plus, Wallet, ArrowUpCircle, ArrowDownCircle, AlertTriangle } from 'lucide-react'
 
 function OptionsOrderPanel() {
   const {
@@ -24,6 +24,9 @@ function OptionsOrderPanel() {
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Check if selected option has liquidity
+  const isOptionAvailable = selectedOption?.data?.available ?? false
+
   const handleQuantityChange = (delta) => {
     updateQuantity(quantity + delta)
   }
@@ -41,6 +44,11 @@ function OptionsOrderPanel() {
 
     if (!selectedOption) {
       toast.error('Please select an option from the chain')
+      return
+    }
+
+    if (!isOptionAvailable) {
+      toast.error('This option has no liquidity - no writers available')
       return
     }
 
@@ -109,7 +117,7 @@ function OptionsOrderPanel() {
 
         {/* Selected Option Info */}
         {selectedStrike && selectedExpiration ? (
-          <div className="p-2 rounded-lg bg-bg-tertiary/50 border border-glass-border">
+          <div className={`p-2 rounded-lg border ${isOptionAvailable ? 'bg-bg-tertiary/50 border-glass-border' : 'bg-loss/10 border-loss/30'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isBuying ? 'bg-call/20 text-call' : 'bg-put/20 text-put'}`}>
@@ -129,6 +137,20 @@ function OptionsOrderPanel() {
                 IV {selectedOption?.iv?.toFixed(0)}%
               </span>
             </div>
+            {/* Write Option Prompt */}
+            {!isOptionAvailable && (
+              <div className="mt-2 p-2 rounded-lg bg-gradient-to-r from-accent-purple/10 to-accent-cyan/10 border border-accent-purple/30">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] font-bold text-accent-purple bg-accent-purple/20 px-1.5 py-0.5 rounded">
+                    NEW MARKET
+                  </span>
+                  <span className="text-[10px] font-semibold text-text-primary">Be the first writer!</span>
+                </div>
+                <p className="text-[9px] text-text-secondary leading-relaxed">
+                  No one has written this option yet. Sell to open a position and earn premium as the market maker.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-3 rounded-lg bg-bg-tertiary/30 border border-dashed border-glass-border text-center">
@@ -193,10 +215,10 @@ function OptionsOrderPanel() {
       {/* Submit Button */}
       <div className="p-3 border-t border-glass-border shrink-0">
         <GradientButton
-          variant={isBuying ? 'call' : 'put'}
+          variant={!isOptionAvailable && selectedOption ? 'outline' : (isBuying ? 'call' : 'put')}
           size="md"
           fullWidth
-          disabled={!selectedOption || !isAuthenticated}
+          disabled={!selectedOption || !isAuthenticated || (isBuying && !isOptionAvailable)}
           loading={isSubmitting}
           onClick={handleSubmit}
         >
@@ -204,16 +226,22 @@ function OptionsOrderPanel() {
             ? 'Connect Wallet'
             : !selectedOption
               ? 'Select Option'
-              : isBuying
-                ? `Buy ${selectedType} — Pay $${orderValue?.totalPremium?.toFixed(2) || '0'}`
-                : `Sell ${selectedType} — Receive $${orderValue?.totalPremium?.toFixed(2) || '0'}`
+              : !isOptionAvailable
+                ? isBuying
+                  ? 'No Sellers — Cannot Buy'
+                  : `Write ${selectedType} — Create Liquidity`
+                : isBuying
+                  ? `Buy ${selectedType} — Pay $${orderValue?.totalPremium?.toFixed(2) || '0'}`
+                  : `Sell ${selectedType} — Receive $${orderValue?.totalPremium?.toFixed(2) || '0'}`
           }
         </GradientButton>
 
         {/* Risk Warning for Selling */}
         {!isBuying && selectedOption && (
           <p className="text-[9px] text-put/80 text-center mt-2">
-            Writing options has unlimited loss potential. Margin required.
+            {isOptionAvailable
+              ? 'Writing options has unlimited loss potential. Margin required.'
+              : 'Be the first to write this option. You set the price.'}
           </p>
         )}
       </div>
